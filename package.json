@@ -1,14 +1,14 @@
 {
   "name": "idb-pconnector",
-  "version": "0.0.1",
-  "description": "Promised-based Db2 Connector for IBM i (pre-alpha, NOT PRODUCTION READY",
+  "version": "0.0.3",
+  "description": "Promised-based Db2 Connector for IBM i (pre-alpha, NOT PRODUCTION READY)",
   "main": "lib/idb-pconnector.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://bitbucket.org/litmis/nodejs-idb-connector.git"
+    "url": "git+https://bitbucket.org/litmis/nodejs-idb-pconnector.git"
   },
   "keywords": [
     "IBMi",
@@ -16,7 +16,7 @@
   ],
   "author": "Jesse Gorzinski",
   "license": "MIT",
-  "homepage": "https://bitbucket.org/litmis/nodejs-idb-connector#readme",
+  "homepage": "https://bitbucket.org/litmis/nodejs-idb-pconnector#readme",
   "dependencies": {
     "idb-connector": "^1.0.5"
   }
