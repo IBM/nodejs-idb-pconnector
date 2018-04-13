@@ -24,5 +24,6 @@ async function runInsertAndSelect() {
 
 runInsertAndSelect();
 
+#Documentaion is outlined in the docs folder
 
 ```
