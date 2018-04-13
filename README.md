@@ -27,4 +27,4 @@ runInsertAndSelect();
 
 
 ```
-### Documentaion is outlined in the docs folder
+### Full Documentation is outlined in the docs folder
