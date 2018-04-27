@@ -1,31 +1,3 @@
-
-# Global
-
-### Global.makeBool(data) 
-
-helper method to convert 0 or 1 recieved from idb-connector to javascript boolean.
-
-**Parameters**
-
-**data**: `any`, the input data to be checked before returning.
-
-**Returns**: , - false if the input data was 0 , true if the input data is 1 , if the data was something else return the data.
-
-### Global.isInt(data) 
-
-helper mthod to determine if the type of data is an integer.
-
-**Parameters**
-
-**data**: `any`, the input data to be tested.
-
-**Returns**: `boolean`, - true if the data is of type number otherwise returns false.
-
-
-
-
-* * *
-
 # Class: Connection
 
 
@@ -135,7 +107,7 @@ Checks if the given SQL is valid and nterprets vendor escape clauses.
 
 **Returns**: `Promise`, - Promise object represents the transformed SQL string that is seen by the data source.
 
-
+- - -
 # Class: Statement
 
 
