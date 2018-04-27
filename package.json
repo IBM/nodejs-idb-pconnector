@@ -18,7 +18,7 @@
   "license": "MIT",
   "homepage": "https://bitbucket.org/litmis/nodejs-idb-pconnector#readme",
   "dependencies": {
-    "idb-connector": "^1.0.7",
+    "idb-connector": "^1.0.9",
     "mocha": "^5.1.0",
     "chai": "^4.1.2"
   },
