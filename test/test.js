@@ -7,14 +7,36 @@
 */
 const assert = require('chai').assert;
 const expect = require('chai').expect;
-const dba = require('../lib/idb-pconnector.js');
+const dba = require('idb-pconnector');
+
 
 // Test Connection Class
+
+describe('connect', () => {
+  it('should return a newly connected dbconn object', async () => {
+    let dbConn = new dba.Connection();
+    console.log(dbConn);
+    let connReturned = dbConn.connect();
+    console.log(connReturned);
+    expect(connReturned.dbconn).to.be.a('dbconn');
+  });
+});
+
+
+describe('getStatement', () => {
+  it('should return a new statemetnt intiialized with the the dbconn', async () => {
+    let dbConn = new dba.Connection().connect();
+    console.log(dbConn);
+    let stmtReturned = dbConn.getStatement();
+    console.log(stmtReturned);
+    expect(stmtReturned.stmt).to.be.a('dbstmt');
+  });
+});
 
 //if successful returns String
 describe('validStmt', () => {
   it('if the SQL is valid, validStmt , should return type String', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbConn = new dba.Connection().connect();
     let res = await dbConn.validStmt(sql);
     console.log('Valid Stmt output: ' + res);
@@ -138,7 +160,7 @@ describe('close', () => {
 //if successful returns undefined
 describe('prepare', () => {
   it('Prepares valid SQL and sends it to the DBMS, if the input SQL Statement cannot be prepared error is returned. ', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     let res = await dbStmt.prepare(sql);
     expect(res).to.be.a('undefined');
@@ -157,12 +179,21 @@ describe('prepareFail', () => {
 //if successful returns undefined.
 describe('bindParams', () => {
   it('associate parameter markers in an SQL statement to app variables', async () => {
-    let sql = 'INSERT INTO AMUSSE.TABLE1 VALUES (?,?)';
+    let sql = 'INSERT INTO QIWS.QCUSTCDT(CUSNUM,LSTNAM,INIT,STREET,CITY,STATE,ZIPCOD,CDTLMT,CHGCOD,BALDUE,CDTDUE) VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE ';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     let res = await dbStmt.bindParam([
-      [2099, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC],
-      ['Node.Js', dba.SQL_PARAM_INPUT, dba.SQL_CHAR]
+      [9997, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], //CUSNUM
+      ['Doe', dba.SQL_PARAM_INPUT, dba.SQL_CHAR], //LASTNAME
+      ['J D', dba.SQL_PARAM_INPUT, dba.SQL_CHAR], //INITIAL
+      ['123 Broadway', dba.SQL_PARAM_INPUT, dba.SQL_CHAR], //ADDRESS
+      ['Hope', dba.SQL_PARAM_INPUT, dba.SQL_CHAR], //CITY
+      ['WA', dba.SQL_PARAM_INPUT, dba.SQL_CHAR], //STATE
+      [98101, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], //ZIP
+      [2000, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], //CREDIT LIMIT
+      [1, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], // change
+      [250, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], //BAL DUE
+      [0.00, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC] //CREDIT DUE
     ]);
     await dbStmt.execute();
     expect(res).to.be.a('undefined');
@@ -171,12 +202,35 @@ describe('bindParams', () => {
 
 describe('bindParamsFail', () => {
   it('error caused by not providing correct params within the params[]', async () => {
-    let sql = 'INSERT INTO AMUSSE.TABLE1 VALUES (?,?)';
+    let sql = 'INSERT INTO QIWS.QCUSTCDT(CUSNUM,LSTNAM,INIT,STREET,CITY,STATE,ZIPCOD,CDTLMT,CHGCOD,BALDUE,CDTDUE) VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE ';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     let res = await dbStmt.bindParam([
-      [2099],
-      ['Node.Js']
+      [1, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], // change
+      [250, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], //BAL DUE
+    ]);
+    await dbStmt.execute();
+    expect(res).to.be.a('undefined');
+  });
+});
+
+describe('bind', () => {
+  it('shorthand for the bindParams()', async () => {
+    let sql = 'INSERT INTO QIWS.QCUSTCDT(CUSNUM,LSTNAM,INIT,STREET,CITY,STATE,ZIPCOD,CDTLMT,CHGCOD,BALDUE,CDTDUE) VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE ';
+    let dbStmt = new dba.Connection().connect().getStatement();
+    await dbStmt.prepare(sql);
+    let res = await dbStmt.bindParam([
+      [9997, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], //CUSNUM
+      ['Johnson', dba.SQL_PARAM_INPUT, dba.SQL_CHAR], //LASTNAME
+      ['A J', dba.SQL_PARAM_INPUT, dba.SQL_CHAR], //INITIAL
+      ['453 Example', dba.SQL_PARAM_INPUT, dba.SQL_CHAR], //ADDRESS
+      ['Fort', dba.SQL_PARAM_INPUT, dba.SQL_CHAR], //CITY
+      ['TN', dba.SQL_PARAM_INPUT, dba.SQL_CHAR], //STATE
+      [37211, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], //ZIP
+      [1000, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], //CREDIT LIMIT
+      [1, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], // change
+      [150, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], //BAL DUE
+      [0.00, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC] //CREDIT DUE
     ]);
     await dbStmt.execute();
     expect(res).to.be.a('undefined');
@@ -186,7 +240,7 @@ describe('bindParamsFail', () => {
 //if successful returns undefined
 describe('close', () => {
   it('frees the statement object. ', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.exec(sql);
     let res = await dbStmt.close();
@@ -196,7 +250,7 @@ describe('close', () => {
 
 // describe('closeFail' , () => {
 // 	it('error caused by calling close before statement was executed. ', async () =>{
-// 			let sql = "SELECT * FROM AMUSSE.TABLE1";
+// 			let sql = "SELECT * FROM QIWS.QCUSTCDT";
 // 			let dbStmt = new dba.Connection().connect().getStatement();
 // 			//await dbStmt.exec(sql);
 // 			let res = await dbStmt.close();
@@ -207,7 +261,7 @@ describe('close', () => {
 //if successful returns undefined
 describe('closeCursor', () => {
   it('closes any cursor associated with the dbstmt object and discards any pending results. ', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.exec(sql);
     let res = await dbStmt.closeCursor();
@@ -217,7 +271,7 @@ describe('closeCursor', () => {
 
 // describe('closeCursorFail' , () => {
 // 	it('error caused by calling closeCursor before statement was executed. ', async () =>{
-// 			let sql = "SELECT * FROM AMUSSE.TABLE1";
+// 			let sql = "SELECT * FROM QIWS.QCUSTCDT";
 // 			let dbStmt = new dba.Connection().connect().getStatement();
 // 			//await dbStmt.exec(sql);
 // 			let res = await dbStmt.closeCursor();
@@ -228,12 +282,21 @@ describe('closeCursor', () => {
 //if successful returns undefined
 describe('commit', () => {
   it('adds all changes to the database that have been made on the connection since connect time ', async () => {
-    let sql = 'INSERT INTO AMUSSE.TABLE1 VALUES (?,?)';
+    let sql = 'INSERT INTO QIWS.QCUSTCDT(CUSNUM,LSTNAM,INIT,STREET,CITY,STATE,ZIPCOD,CDTLMT,CHGCOD,BALDUE,CDTDUE) VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE ';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.bindParam([
-      [4234, dba.PARM_TYPE_INPUT, 2],
-      ['sublime', dba.PARM_TYPE_INPUT, 1]
+      [9997, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], //CUSNUM
+      ['Johnson', dba.SQL_PARAM_INPUT, dba.SQL_CHAR], //LASTNAME
+      ['A J', dba.SQL_PARAM_INPUT, dba.SQL_CHAR], //INITIAL
+      ['453 Example', dba.SQL_PARAM_INPUT, dba.SQL_CHAR], //ADDRESS
+      ['Fort', dba.SQL_PARAM_INPUT, dba.SQL_CHAR], //CITY
+      ['TN', dba.SQL_PARAM_INPUT, dba.SQL_CHAR], //STATE
+      [37211, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], //ZIP
+      [1000, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], //CREDIT LIMIT
+      [1, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], // change
+      [150, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], //BAL DUE
+      [0.00, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC] //CREDIT DUE
     ]);
     await dbStmt.execute();
     let res = await dbStmt.commit();
@@ -244,7 +307,7 @@ describe('commit', () => {
 // need to create a Failure Case for commit()
 // describe('commitFail' , () => {
 // 	it('error caused by calling commit before statement was executed. ', async () =>{
-// 			let sql = "INSERT INTO AMUSSE.TABLE1 VALUES (?,?)";
+// 			let sql = 'INSERT INTO QIWS.QCUSTCDT(CUSNUM,LSTNAM,INIT,STREET,CITY,STATE,ZIPCOD,CDTLMT,CHGCOD,BALDUE,CDTDUE) VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE ';
 // 			let dbStmt =  new dba.Connection().connect().getStatement();
 // 			await dbStmt.prepare(sql);
 // 			let res = await dbStmt.bindParam([ [4234,dba.PARM_TYPE_INPUT,2], ['sublime' ,dba.PARM_TYPE_INPUT, 1] ]);
@@ -257,7 +320,7 @@ describe('commit', () => {
 //if successful returns an array. of Type of objects
 describe('exec', () => {
   it('performs action of given SQL String', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     let res = await dbStmt.exec(sql);
     assert.isNotObject(res, 'object was not returned');
@@ -269,7 +332,7 @@ describe('exec', () => {
 
 describe('execFail', () => {
   it('error caused by calling exec without params', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     let res = await dbStmt.exec();
     assert.isNotObject(res, 'object was not returned');
@@ -282,7 +345,7 @@ describe('execFail', () => {
 //if successful returns an array of length 0?. Why,even return it if size === 0?
 describe('execute', () => {
   it('retrieves results from execute function:', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     let res = await dbStmt.execute();
@@ -294,7 +357,7 @@ describe('execute', () => {
 
 describe('executeFail', () => {
   it('error caused by calling execute before statement was prepared.', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     //await dbStmt.prepare(sql);
     let res = await dbStmt.execute();
@@ -307,7 +370,7 @@ describe('executeFail', () => {
 //if successful returns an array. of Type of objects
 describe('fetchAll', () => {
   it('retrieves results from execute function:', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -319,7 +382,7 @@ describe('fetchAll', () => {
 
 describe('fetchAllFail', () => {
   it('error caused by calling fetchAll before results were available', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     //await dbStmt.execute();
@@ -333,7 +396,7 @@ describe('fetchAllFail', () => {
 //kind of weird because FetchAll returns an Array(of objects? )
 describe('fetch', () => {
   it('retrieves results from execute function:', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -345,7 +408,7 @@ describe('fetch', () => {
 
 describe('fetchFail', () => {
   it('error caused by calling fetch before results were available', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     //await dbStmt.execute();
@@ -358,7 +421,7 @@ describe('fetchFail', () => {
 //if successful returns an Int
 describe('numFields', () => {
   it('retrieves number of fields contained in result', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -370,7 +433,7 @@ describe('numFields', () => {
 
 describe('numFieldsFail', () => {
   it('error caused by calling numFields before results were available.', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     //await dbStmt.execute();
@@ -383,7 +446,7 @@ describe('numFieldsFail', () => {
 //if successful returns an Int
 describe('numRows', () => {
   it('retrieves number of rows that were effected by a Querry', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -395,7 +458,7 @@ describe('numRows', () => {
 
 describe('numRowsFail', () => {
   it('error caused by calling numRows before results were available.', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     //await dbStmt.execute();
@@ -408,7 +471,7 @@ describe('numRowsFail', () => {
 //if successful returns an Int
 describe('fieldType', () => {
   it('requires an int index parameter. If a valid index is provided, returns the data type of the indicated column', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -423,7 +486,7 @@ describe('fieldType', () => {
 
 describe('fieldTypeFail', () => {
   it('error caused by not providing an index as a param', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -439,7 +502,7 @@ describe('fieldTypeFail', () => {
 //if successful returns an Int
 describe('fieldWidth', () => {
   it('requires an int index parameter. If a valid index is provided, returns the field width of the indicated column', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -454,7 +517,7 @@ describe('fieldWidth', () => {
 
 describe('fieldWidthFail', () => {
   it('error caused by not providing an index as a param', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -470,7 +533,7 @@ describe('fieldWidthFail', () => {
 //if successful returns an Int but should return boolean based on doc , UPDATE 3-6-18 added logic to return the boolean. (makeBool method in idb-p)
 describe('fieldNullable', () => {
   it('requires an int index parameter. If a valid index is provided, returns t/f if the indicated column can be Null', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -486,7 +549,7 @@ describe('fieldNullable', () => {
 
 describe('fieldNullableFail', () => {
   it('error caused by not providing an index as a param', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -498,11 +561,11 @@ describe('fieldNullableFail', () => {
 //if successful returns an String
 describe('fieldName', () => {
   it('requires an int index parameter. If a valid index is provided,returns name of the indicated column ', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
-    let col1 = await dbStmt.fieldName(0);
+    let col1 = await dbStmt.fieldName(1);
     let col2 = await dbStmt.fieldName(1);
     console.log('column 1 Name = : ' + col1);
     console.log('column 2 Name = : ' + col2);
@@ -513,7 +576,7 @@ describe('fieldName', () => {
 
 describe('fieldNameFail', () => {
   it('error caused by providing an invalid index as a param', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -529,7 +592,7 @@ describe('fieldNameFail', () => {
 //if successful returns an Int
 describe('fieldPrecise', () => {
   it('requires an int index parameter. If a valid index is provided, returns the precision of the indicated column', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -544,7 +607,7 @@ describe('fieldPrecise', () => {
 
 describe('fieldPreciseFail', () => {
   it('error caused by not providing an index as a param', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -560,7 +623,7 @@ describe('fieldPreciseFail', () => {
 //if successful returns an Int
 describe('fieldScale', () => {
   it('requires an int index parameter. If a valid index is provided, returns the scale of the indicated column', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -575,7 +638,7 @@ describe('fieldScale', () => {
 
 describe('fieldScaleFail', () => {
   it('error caused by providing an invalid index as a param', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -638,7 +701,7 @@ describe('getStmtAttrFail', () => {
 // whats the passing use case for next Result?
 // describe('nextResult', () => {
 // 	it('Determines whether there is more information available on the statement', async () => {
-// 		let sql = "SELECT * FROM AMUSSE.TABLE1";
+// 		let sql = "SELECT * FROM QIWS.QCUSTCDT";
 // 		let dbStmt = new dba.Connection().connect().getStatement();
 // 		await dbStmt.prepare(sql);
 // 		await dbStmt.execute();
@@ -649,7 +712,7 @@ describe('getStmtAttrFail', () => {
 
 describe('nextResultFail', () => {
   it('err', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -661,7 +724,7 @@ describe('nextResultFail', () => {
 //if successful returns undefined
 describe('rollback', () => {
   it('Rollback all changes to the database that have been made on the connection', async () => {
-    let sql = 'SELECT * FROM AMUSSE.TABLE1';
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -674,7 +737,7 @@ describe('rollback', () => {
 // describe('rollbackFail', () => {
 // 	it('error caused by ', async () => {
 // 		let res = await dbStmt.rollback();
-// 		let sql = "SELECT * FROM AMUSSE.TABLE1";
+// 		let sql = "SELECT * FROM QIWS.QCUSTCDT";
 // 		let dbStmt = new dba.Connection().connect().getStatement();
 // 		await dbStmt.prepare(sql);
 // 		//await dbStmt.execute();
