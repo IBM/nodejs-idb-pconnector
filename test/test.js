@@ -157,14 +157,11 @@ describe('close', () => {
 
 //Test Statement Class
 
-
-
 //if successful returns undefined
 describe('prepare', () => {
   it('Prepares valid SQL and sends it to the DBMS, if the input SQL Statement cannot be prepared error is returned. ', async () => {
     let sql = 'SELECT * FROM QIWS.QCUSTCDT';
     let dbStmt = new dba.Connection().connect().getStatement();
-    console.log(dbStmt);
     let res = await dbStmt.prepare(sql);
     expect(res).to.be.a('undefined');
   });
