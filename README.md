@@ -7,19 +7,19 @@
 Simple example of using a prepared statement to insert some values into a table, then querying all contents of that table:
 
 ```javascript
-var dba = require("idb-pconnector");
+var dba = require('idb-pconnector');
 async function runInsertAndSelect() {
     try {
         var dbStmt =  new dba.Connection().connect().getStatement();
-        await dbStmt.prepare("INSERT INTO MYSCHEMA.TABLE VALUES (?,?)");
-        await dbStmt.bind([ [2018,dba.SQL_PARAM_INPUT,dba.SQL_BIND_NUMERIC], 
+        await dbStmt.prepare('INSERT INTO MYSCHEMA.TABLE VALUES (?,?)');
+        await dbStmt.bind([ [2018,dba.SQL_PARAM_INPUT, dba.SQL_BIND_NUMERIC], 
                             ['Dog' ,dba.SQL_PARAM_INPUT, dba.SQL_BIND_CHAR] 
         ]);
         await dbStmt.execute();
-        var res = await dbStmt.exec("SELECT * FROM MYSCHEMA.TABLE");
-        console.log("Select results: "+JSON.stringify(res));
+        var res = await dbStmt.exec('SELECT * FROM MYSCHEMA.TABLE');
+        console.log('Select results: '+JSON.stringify(res));
     } catch(err) {
-        console.log("Error was: " + err);
+        console.log('Error was: ' + err);
     } 
 }
 
