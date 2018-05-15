@@ -11,14 +11,15 @@ var dba = require("idb-pconnector");
 async function runInsertAndSelect() {
     try {
         var dbStmt =  new dba.Connection().connect().getStatement();
-        await dbStmt.prepare("INSERT INTO MYSCHEMA.TABLE1 VALUES (?,?)");
-        await dbStmt.bind([ [2018,dba.PARM_TYPE_INPUT,2], ['Dog' ,dba.PARM_TYPE_INPUT, 1] ]);
+        await dbStmt.prepare("INSERT INTO MYSCHEMA.TABLE VALUES (?,?)");
+        await dbStmt.bind([ [2018,dba.SQL_PARAM_INPUT,dba.SQL_BIND_NUMERIC], 
+                            ['Dog' ,dba.SQL_PARAM_INPUT, dba.SQL_BIND_CHAR] 
+        ]);
         await dbStmt.execute();
-        var res = await dbStmt.exec("SELECT * FROM MYSCHEMA.TABLE1");
+        var res = await dbStmt.exec("SELECT * FROM MYSCHEMA.TABLE");
         console.log("Select results: "+JSON.stringify(res));
-    } catch(dbError) {
-        console.log("Error is " + dbError);
-        console.log(error.stack);
+    } catch(err) {
+        console.log("Error was: " + err);
     } 
 }
 
