@@ -1,5 +1,5 @@
 //adjust require path as needed
-const DBPool = require('../lib/idb-pconnector').DBPool;
+const {DBPool} = require('../lib/idb-pconnector');
 //set the debug to true to view verbose output call
 const pool = new DBPool({}, {debug: true});
 //remember to use await you must wrap within async Function.
