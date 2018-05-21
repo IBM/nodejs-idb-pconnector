@@ -31,11 +31,11 @@ describe('detach', async () => {
     //perform some stmts
     await conn.getStatement().exec('SELECT * FROM QIWS.QCUSTCDT');
     log(`\n${JSON.stringify(conn)}`);
-    let stmtBefore = conn.stmt;
+    let stmtBefore = conn.statement;
     let id = conn.poolIndex;
     await conn.detach();
     let detached = connPool.connections[id];
-    let stmtAfter = detached.stmt;
+    let stmtAfter = detached.statement;
     stmtBefore === stmtAfter ? log('Yes') : log('no');
     //after being detached available should be true again
     expect(detached.available).to.be.true;
