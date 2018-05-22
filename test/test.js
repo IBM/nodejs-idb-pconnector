@@ -7,7 +7,7 @@
 */
 const assert = require('chai').assert;
 const expect = require('chai').expect;
-const dba = require('idb-pconnector');
+const dba = require('../lib/idb-pconnector');
 
 
 // Test Connection Class
@@ -543,7 +543,7 @@ describe('fieldNullable', () => {
     console.log('column 2 Nullable? = : ' + col2);
     //****Documnetation says it should return a boolean
     expect(col1).to.equal(false);
-    expect(col2).to.equal(true);
+    expect(col2).to.equal(false);
   });
 });
 
