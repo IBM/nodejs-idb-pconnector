@@ -98,7 +98,8 @@ describe('runSql', async () => {
 describe('prepare, bind, execute', async () => {
   it('should prepare bind and execute , return output params if available or result set if available',
     async () => {
-      let results = await connPool.prepareExecute('SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = ?', [12]);
+      let cusNum = 938472,
+        results = await connPool.prepareExecute('SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = ?', [cusNum]);
       console.log(results);
       expect(results).to.be.an('array') && expect(results.length).to.be.gt(0) || expect(result).to.be.null;
     });
