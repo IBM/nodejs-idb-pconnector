@@ -6,12 +6,13 @@
  
  As Well As Providing Connection Pooling Support. The `DBPool` has integrated aggregates that make it easier to Prepare & Execute, Prepare, Bind, & Execute, and Quickly Execute SQL.  
  
- ## Documentation
- - [idb-pconnector](#idbp-connector-api)
+## Documentation
+
+ - [idb-pconnector](#api)
  
  - [DBPool](#dbpool-api)
  
-  ## Examples
+## Examples
  
 Simple example of using a prepared statement to insert some values into a table, then querying all contents of that table:
 
@@ -39,36 +40,29 @@ runInsertAndSelect();
 Example Using DBPool to attach a connection , execute a stored procedure , and executing a simple select statement. Finally detach the connection. 
 
 ```javascript
-//adjust require path as needed
-const {DBPool} = require('../lib/idb-pconnector');
+const {DBPool} = require('idb-pconnector');
 //set the debug to true to view verbose output call
 const pool = new DBPool({}, {debug: true});
 //remember to use await you must wrap within async Function.
 async function poolExample(){
-//attach() returns an available connection from the pool.
-  try {
-    let connection = pool.attach(),
-      statement = connection.getStatement(),
-      results = null,
-      outputParameters = null;
 
-    await statement.prepare('CALL QIWS.GET_MEMBERS(\'QIWS\',\'QCUSTCDT\')');
-    outputParameters = await statement.execute();
-    results = await statement.fetchAll();
+//attach() returns an available connection from the pool.
+  let connection = pool.attach(),
+    results = null;
+
+  try {
+	await connection.getStatement().prepare("CALL QIWS.GET_MEMBERS('QIWS','QCUSTCDT')");
+    await connection.getStatement().execute();
+    results = await connection.getStatement().fetchAll();
 
     if (results !== null){
-      console.log(results);
+      console.log(`\n\nResults: \n${JSON.stringify(results)}`);
     }
-
-    let results2 = await statement.exec('SELECT * FROM QIWS.QCUSTCDT');
-    if (results2 !== null) {
-      console.log(`\n${JSON.stringify(results3)}`);
-    }
-    //closes statments and gets newStatement() makes the Connection available  for reuse.
+    //closes statments makes the Connection available for reuse.
     await pool.detach(connection);
-    console.log('\nDone');
+
   } catch (err){
-    console.log(`Error was: \n${err.stack}`);
+    console.log(`Error was: \n\n${err.stack}`);
     pool.retire(connection);
   }
 };
@@ -80,12 +74,11 @@ poolExample();
 Example Using DBPool aggregates to Prepare & Execute , Prepare Bind Execute , and Execute a statement.
 
 ```javascript
-//adjust require path as needed
 const {DBPool} = require('idb-pconnector');
 //optional to set the debug to true to view verbose output call
 const pool = new DBPool({}, {debug: true});
 //remember to use await you must wrap within async Function.
-async function aggrgatesRun(){
+async function aggregatesRun(){
   //Prepare and execute an SQL statement.
   try {
     console.log('\nPrepare and Execute\n');
@@ -128,7 +121,7 @@ aggregatesRun();
 ```
 
 
-# idb-pconnector API
+# API
 
 # Class: Connection
 
