@@ -6,12 +6,12 @@
  
  As Well As Providing Connection Pooling Support. The `DBPool` has integrated aggregates that make it easier to Prepare & Execute, Prepare, Bind, & Execute, and Quickly Execute SQL.  
  
- ### Documentation
+ ## Documentation
  - [idb-pconnector](#idbp-connector-api)
  
  - [DBPool](#dbpool-api)
  
-  ### Examples
+  ## Examples
  
 Simple example of using a prepared statement to insert some values into a table, then querying all contents of that table:
 
