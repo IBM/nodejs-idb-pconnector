@@ -1,34 +1,122 @@
-# idb-pconnector
+# idb-pconnector Package
 
  Promised-based Db2 Connector for IBM i (pre-alpha, NOT PRODUCTION READY)
  
- The objective of this project is to provide a database connector for Db2 on i that enables usage of the "await" keyword. 
+ The objective of this project is to provide a database connector for Db2 on i that enables usage of the "await" keyword.
+ 
+ As Well As Providing Connection Pooling Support. The `DBPool` has integrated aggregates that make it easier to Prepare & Execute, Prepare, Bind, & Execute, and Quickly Execute SQL.  
+ 
+## Examples
  
 Simple example of using a prepared statement to insert some values into a table, then querying all contents of that table:
 
 ```javascript
-var dba = require('idb-pconnector');
+const idbp = require('idb-pconnector');
 async function runInsertAndSelect() {
     try {
-        var dbStmt =  new dba.Connection().connect().getStatement();
-        await dbStmt.prepare('INSERT INTO MYSCHEMA.TABLE VALUES (?,?)');
-        await dbStmt.bind([ [2018,dba.SQL_PARAM_INPUT, dba.SQL_BIND_NUMERIC], 
-                            ['Dog' ,dba.SQL_PARAM_INPUT, dba.SQL_BIND_CHAR] 
+        let statement =  new idbp.Connection().connect().getStatement();
+        await statement.prepare('INSERT INTO MYSCHEMA.TABLE VALUES (?,?)');
+        await statement.bind([ [2018,idbp.SQL_PARAM_INPUT, idbp.SQL_BIND_NUMERIC], 
+                            ['Dog' ,idbp.SQL_PARAM_INPUT, idbp.SQL_BIND_CHAR] 
         ]);
-        await dbStmt.execute();
-        var res = await dbStmt.exec('SELECT * FROM MYSCHEMA.TABLE');
-        console.log('Select results: '+JSON.stringify(res));
+        await statement.execute();
+        let result = await statement.exec('SELECT * FROM MYSCHEMA.TABLE');
+        console.log(`Select results: \n${JSON.stringify(result)}`);
     } catch(err) {
-        console.log('Error was: ' + err);
+        console.log(`Error was: \n${err.stack}`);
     } 
 }
 
 runInsertAndSelect();
 
+```
+
+Example Using DBPool to attach a connection , execute a stored procedure , and executing a simple select statement. Finally detach the connection. 
+
+```javascript
+const {DBPool} = require('idb-pconnector');
+//set the debug to true to view verbose output call
+const pool = new DBPool({}, {debug: true});
+//remember to use await you must wrap within async Function.
+async function poolExample(){
+
+//attach() returns an available connection from the pool.
+  let connection = pool.attach(),
+    results = null;
+
+  try {
+	await connection.getStatement().prepare("CALL QIWS.GET_MEMBERS('QIWS','QCUSTCDT')");
+    await connection.getStatement().execute();
+    results = await connection.getStatement().fetchAll();
+
+    if (results !== null){
+      console.log(`\n\nResults: \n${JSON.stringify(results)}`);
+    }
+    //closes statments makes the Connection available for reuse.
+    await pool.detach(connection);
+
+  } catch (err){
+    console.log(`Error was: \n\n${err.stack}`);
+    pool.retire(connection);
+  }
+};
+
+poolExample();
 
 
 ```
-###  Documentation
+Example Using DBPool aggregates to Prepare & Execute , Prepare Bind Execute , and Execute a statement.
+
+```javascript
+const {DBPool} = require('idb-pconnector');
+//optional to set the debug to true to view verbose output call
+const pool = new DBPool({}, {debug: true});
+//remember to use await you must wrap within async Function.
+async function aggregatesRun(){
+  //Prepare and execute an SQL statement.
+  try {
+    console.log('\nPrepare and Execute\n');
+    let results = await pool.prepareExecute("CALL QIWS.GET_MEMBERS('QIWS','QCUSTCDT')");
+  
+    if (results !== null) {
+      console.log(`\n\n${JSON.stringify(results)}\n\n`);
+    }
+    /*
+    Params are passed as an array values.
+    The order of the params indexed in the array should map to the order of the parameter markers(i.e. '?').
+  */
+    console.log('\nPrepare Bind & Execute\n');
+    let sql = 'INSERT INTO QIWS.QCUSTCDT VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE',
+      params = [4949, 'Johnson', 'T J', '452 Broadway', 'MSP', 'MN', 9810, 2000, 1, 250, 0.00],
+      results2 = await pool.prepareExecute(sql, params);
+
+    if (results2 !== null){
+      console.log(`\n\n${JSON.stringify(results2)}\n\n`);
+    }
+    /*
+    Quickly execute a statement by providing the SQL to the runSql() function
+    NOTE: Stored Procedures should use the prepareExecute() method instead.
+  */
+    console.log('\nRun a Query\n');
+    let results3 = await pool.runSql(`SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = ${params[0]}`);
+  
+    if (results3 !== null) {
+      console.log(`\n${JSON.stringify(results3)}`);
+    }
+    console.log('\nDone');
+
+  } catch (err){
+    console.log(`Error was: ${err.stack}`);
+  }
+}
+aggregatesRun();
+
+
+```
+
+
+# API
+
 # Class: Connection
 
 
@@ -466,5 +554,100 @@ SQL_HANDLE_ENV:Retrieve the environment diagnostic information
 	   SQL_HANDLE_DBC:Retrieve the connection diagnostic information
        SQL_HANDLE_STMT:Retrieve the statement diagnostic information 
 ```
+
+# DBPool API
+
+
+
+# Class: DBPool
+Manages a list of DBPoolConnection instances.
+Constructor to instantiate a new instance of a DBPool class given the `database` and `config`
+
+
+## Constructor: DBPool(database , config)
+
+**Parameters**
+
+**database**: `object`, Object includes the `url`(databse name) defaults to *LOCAL, `username`, and `password`. `username` and `password` assumed blank if not specified with non-local URL.
+
+**config**: `object` , Object includes the `incrementSize` and `debug`. IncrementSize sets the desired size of the DBPool. If none specified, defaults to 8 connections. Setting debug = true will display message logs.
+
+
+### DBPool.createConnection(index) 
+
+Instantiates a new instance of DBPoolConnection with an `index` and appends it to the pool.
+Assumes the database of the pool when establishing the connection.
+
+**Parameters**
+
+**index**: `number`, An identifier to id the connection for debug purposes.
+
+
+### DBPool.detachAll() 
+
+Frees all connections in the pool (Sets "Available" back to true for all)
+closes any statements and gets a new statement.
+
+**Returns**: `boolean`, - true if all were detached succesfully
+
+### DBPool.retireAll() 
+
+Retires (Removes) all connections from being used again
+
+**Returns**: `boolean`, - true if all were retired succesfully
+
+### DBPool.detach(connection) 
+
+Frees a connection (Returns the connection "Available" back to true)
+closes any statements and gets a new statement.
+
+**Parameters**
+
+**connection**: `DBPoolConnection`, Frees a connection (Returns the connection "Available" back to true)
+closes any statements and gets a new statement.
+
+
+### DBPool.retire(connection) 
+
+Retires a connection from being used and removes it from the pool
+
+**Parameters**
+
+**connection**: `DBPoolConnection`, Retires a connection from being used and removes it from the pool
+
+
+### DBPool.attach() 
+
+Finds and returns the first available Connection.
+
+**Returns**: `DBPoolConnection`, - one connection from the DBPool.
+
+
+
+### DBPool.runSql(sql) 
+
+Shorthand to exec a statement , just provide the sql to run.
+
+**Parameters**
+
+**sql**: `string`, the sql statment to execute.
+
+**Returns**: `array`, - if the SQL returns a result set it is returned as an array of objects.
+ else if no result set is available null is returned. caller should check if null is returned.
+
+### DBPool.prepareExecute(sql, params) 
+
+Shortcut to prepare ,bind, and execute. Just provide the sql and the params as an array.
+
+**Parameters**
+
+**sql**: `string`, the sql to prepare , include parameter markers (?, ?, ...)
+
+**params**: `array`, an optional array of values to bind. order of the values in the array must match the
+order of the desired parameter marker in the sql string.
+
+**Returns**: `array`, - if the Prepared SQL returns result set it is returned as an array of objects.
+else null will be returned indicating that there is no result set.
+
 
 * * *
