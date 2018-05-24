@@ -40,14 +40,15 @@ const pool = new DBPool({}, {debug: true});
 //remember to use await you must wrap within async Function.
 async function poolExample(){
 
-//attach() returns an available connection from the pool.
+  //attach() returns an available connection from the pool.
   let connection = pool.attach(),
+    statement = connection.getStatement(),
     results = null;
 
   try {
-	await connection.getStatement().prepare("CALL QIWS.GET_MEMBERS('QIWS','QCUSTCDT')");
-    await connection.getStatement().execute();
-    results = await connection.getStatement().fetchAll();
+    await statement.prepare("CALL QIWS.GET_MEMBERS('QIWS','QCUSTCDT')");
+    await statement.execute();
+    results = await statement.fetchAll();
 
     if (results !== null){
       console.log(`\n\nResults: \n${JSON.stringify(results)}`);
