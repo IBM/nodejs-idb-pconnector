@@ -1,10 +1,10 @@
 {
   "name": "idb-pconnector",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Promised-based Db2 Connector for IBM i (pre-alpha, NOT PRODUCTION READY)",
   "main": "lib/idb-pconnector.js",
   "scripts": {
-    "test": "mocha"
+    "test": "node node_modules/.bin/mocha"
   },
   "repository": {
     "type": "git",
@@ -18,11 +18,10 @@
   "license": "MIT",
   "homepage": "https://bitbucket.org/litmis/nodejs-idb-pconnector#readme",
   "dependencies": {
-    "idb-connector": "^1.0.10"
+    "idb-connector": "^1.0.12"
   },
   "devDependencies": {
     "mocha": "^5.1.0",
     "chai": "^4.1.2"
   }
-  
 }
