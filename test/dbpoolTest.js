@@ -12,6 +12,7 @@ describe('createConnetion', async () => {
       connPool.createConnection();
       //check the new length
       expect(connPool.connections.length).to.be.equal(lenBefore +1);
+      // connPool.retire(connPool.attach());
     });
 });
 
@@ -24,29 +25,41 @@ describe('attach', async () => {
     connPool.detach(conn);
   });
 });
-describe('detach', async () => {
-  it('should make the connection available again and clear stmts', async () => {
-    //get the conn
-    let conn =  await connPool.attach();
-    //perform some stmts
-    await conn.getStatement().exec('SELECT * FROM QIWS.QCUSTCDT');
-    log(`\n${JSON.stringify(conn)}`);
-    let stmtBefore = conn.statement;
-    let id = conn.poolIndex;
-    await conn.detach();
-    let detached = connPool.connections[id];
-    let stmtAfter = detached.statement;
-    stmtBefore === stmtAfter ? log('Yes') : log('no');
-    //after being detached available should be true again
-    expect(detached.available).to.be.true;
-    //make sure the statement was cleared
-    expect(stmtBefore).to.not.equal(stmtAfter);
+describe.only('detach', async () => {
+  it('should make the connection available again and clear stmts', async (done) => {
+    new Promise( async (resolve, reject) =>{
+      //get the conn
+      let conn =  await connPool.attach();
+      //perform some stmts
+      await conn.getStatement().exec('SELECT * FROM QIWS.QCUSTCDT');
+      log(`\n${JSON.stringify(conn)}`);
+      let stmtBefore = conn.statement;
+      let id = conn.poolIndex;
+      await conn.detach();
+      let detached = connPool.connections[id];
+      let stmtAfter = detached.statement;
+      stmtBefore === stmtAfter ? log('Yes') : log('no');
+      //after being detached available should be true again
+      expect(detached.available).to.be.true;
+      //make sure the statement was cleared
+      expect(stmtBefore).to.not.equal(stmtAfter);
+      await connPool.detach(conn);
+    });
+    done();
   });
 });
-describe('detachAll', async () => {
+
+describe.only('detachAll', async () => {
   it('should return all connections back to available', async () => {
+    //to clear all connections before attaching all
+    await connPool.detachAll();
+
     //first attach all 8 connections
     log(connPool.connections.length);
+    // log(JSON.stringify(connPool.connections));
+    for (connection of connPool.connections){
+      log(`${connection.poolIndex} , ${connection.available}`);
+    }
     //make all of th
     for ( connection of connPool.connections){
       //all of the conns should be unavailable
@@ -68,7 +81,7 @@ describe('detachAll', async () => {
   });
 
 });
-describe('retire', async () => {
+describe.only('retire', async () => {
   it('should remove a connection from the pool', async () => {
     let conn = await connPool.attach(),
       id = conn.poolIndex,
@@ -80,7 +93,7 @@ describe('retire', async () => {
     });
   });
 });
-describe('retireAll', async () => {
+describe.only('retireAll', async () => {
   it('should remove all connection from the pool', async () => {
     log('Length Before: '+ connPool.connections.length);
     await connPool.retireAll();
@@ -88,20 +101,26 @@ describe('retireAll', async () => {
     expect(connPool.connections.length).to.equal(0);
   });
 });
-describe('runSql', async () => {
-  it('should execute sql and return result set as an array if available , or return null', async () => {
-    let results = await connPool.runSql('SELECT * FROM QIWS.QCUSTCDT');
-    expect(results).to.be.an('array') && expect(results.length).to.be.gt(0) || expect(result.to.be.null);
+describe.only('runSql', async () => {
+  it('should execute sql and return result set as an array if available , or return null', async (done) => {
+    new Promise(async () => {
+      let results = await connPool.runSql('SELECT * FROM QIWS.QCUSTCDT');
+      expect(results).to.be.an('array') && expect(results.length).to.be.gt(0) || expect(result.to.be.null);
+    });
+    done();
   });
 });
 
-describe('prepare, bind, execute', async () => {
+describe.only('prepare, bind, execute', async () => {
   it('should prepare bind and execute , return output params if available or result set if available',
-    async () => {
-      let cusNum = 938472,
-        results = await connPool.prepareExecute('SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = ?', [cusNum]);
-      console.log(results);
-      expect(results).to.be.an('array') && expect(results.length).to.be.gt(0) || expect(result).to.be.null;
+    async (done) => {
+      new Promise(async (resolve, reject) =>{
+        let cusNum = 938472,
+          results = await connPool.prepareExecute('SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = ?', [cusNum]);
+        console.log(results);
+        expect(results).to.be.an('array') && expect(results.length).to.be.gt(0) || expect(result).to.be.null;
+      });
+      done();
     });
 });
 
