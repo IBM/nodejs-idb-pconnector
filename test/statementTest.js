@@ -13,8 +13,9 @@
 * This Error is false because Tests in manualTest.js show that time taken by each test case <2000 ms.
 
 * When wrapping the test code in a new promise, Assertion Errors Are not being passed up to actually Fail
-* the tests , therefore a False Passing Test may occur.
+* the tests , therefore a Falsly Passing Test may occur.
 * On Node version 8 an Unhandled Promise Rejection is printed to the console.
+* See mocha-issue.txt for more detailed information.
 *
 */
 const assert = require('chai').assert;
@@ -25,8 +26,8 @@ const util = require('util');
 //Test Statement Class
 
 // //if successful returns undefined
-describe('prepare', function (){
-  it('Prepares valid SQL and sends it to the DBMS, if the input SQL Statement cannot be prepared error is returned. ', async function (done){
+describe('prepare', () => {
+  it('Prepares valid SQL and sends it to the DBMS, if the input SQL Statement cannot be prepared error is returned. ', async (done) =>{
     new Promise(async function(resolve, reject){
       dbConn = new dba.Connection();
       dbConn.debug(true);
@@ -66,7 +67,6 @@ describe('bindParams', () => {
         [250, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC], //BAL DUE
         [0.00, dba.SQL_PARAM_INPUT, dba.SQL_NUMERIC] //CREDIT DUE
       ]);
-
       await dbStmt.execute();
 
       let countResult2 = await dbStmt.exec('SELECT COUNT(CUSNUM) AS COUNT FROM QIWS.QCUSTCDT'),
@@ -141,7 +141,6 @@ describe('commit', () => {
     });
     done();
   });
-
 });
 
 //if successful returns an array. of Type of objects
@@ -153,11 +152,8 @@ describe('exec', () => {
       let dbStmt = dbConn.connect().getStatement(),
         sql = 'SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = 938472';
 
-      console.time('exec');
       let result =  await dbStmt.exec(sql);
-      console.timeEnd('exec');
 
-      console.log(`Type of result = ${typeof result}`);
       console.log(`Exec results: ${JSON.stringify(result)}`);
       expect(result).to.be.an('array');
       expect(result.length).to.be.greaterThan(0);
@@ -176,14 +172,11 @@ describe('execute', () => {
       dbConn.debug(true);
       let dbStmt = dbConn.connect().getStatement(),
         bal = 0;
-      console.time('execute');
       await dbStmt.prepare(sql);
       await dbStmt.bind([[bal, dba.SQL_PARAM_OUT, dba.SQL_NUMERIC]]);
       let result = await dbStmt.execute();
-      console.timeEnd('execute');
 
       console.log(`ExecuteAsync results:\n ${JSON.stringify(result)}`);
-      console.log(`TypeOf ExecuteAsync results: ${typeof (result)}`);
       console.log(`Length of results: ${result.length}`);
       expect(result).to.be.a('array');
       expect(result.length).to.be.greaterThan(0);
@@ -191,7 +184,6 @@ describe('execute', () => {
     done();
   });
 });
-
 
 //if successful returns an array. of Type of objects
 describe('fetchAll', () => {
@@ -203,23 +195,18 @@ describe('fetchAll', () => {
       dbConn.debug(true);
       let dbStmt = dbConn.connect().getStatement();
 
-      console.time('fetchAll');
       await dbStmt.prepare(sql);
       await dbStmt.execute();
       let result = await dbStmt.fetchAll();
 
-      console.timeEnd('fetchAll');
       console.log(`Fetch All results:\n ${JSON.stringify(result)}`);
       console.log(`Size of the returned array: ${result.length}`);
       expect(result).to.be.a('array');
       expect(result.length).to.be.greaterThan(0);
-
     });
     done();
   });
 });
-
-
 
 //if successful returns an Object of Row
 //kind of weird because FetchAll returns an Array(of objects? )
@@ -231,19 +218,16 @@ describe('fetch', () => {
       dbConn.debug(true);
       let dbStmt = dbConn.connect().getStatement();
 
-      console.time('fetch');
       await dbStmt.prepare(sql);
       await dbStmt.execute();
       let result = await dbStmt.fetch();
 
-      console.timeEnd('fetch');
       console.log(`Fetch result:\n ${JSON.stringify(result)}`);
       expect(result).to.be.a('object');
     });
     done();
   });
 });
-
 
 //if successful returns an Int
 describe('numFields', () => {
@@ -263,8 +247,6 @@ describe('numFields', () => {
   });
 });
 
-
-
 //if successful returns an Int
 describe('numRows', () => {
   it('retrieves number of rows that were effected by a Querry', async (done) => {
@@ -282,7 +264,6 @@ describe('numRows', () => {
     done();
   });
 });
-
 
 //if successful returns an Int
 describe('fieldType', () => {
@@ -306,8 +287,6 @@ describe('fieldType', () => {
   });
 });
 
-
-
 //if successful returns an Int
 describe('fieldWidth', () => {
   it('requires an int index parameter. If a valid index is provided, returns the field width of the indicated column', async (done) => {
@@ -329,8 +308,6 @@ describe('fieldWidth', () => {
     done();
   });
 });
-
-
 
 //if successful returns an Int but should return boolean based on doc , UPDATE 3-6-18 added logic to return the boolean. (makeBool method in idb-p)
 describe('fieldNullable', () => {
@@ -355,7 +332,6 @@ describe('fieldNullable', () => {
   });
 });
 
-
 //if successful returns an String
 describe('fieldName', () => {
   it('requires an int index parameter. If a valid index is provided,returns name of the indicated column ', async (done) => {
@@ -377,8 +353,6 @@ describe('fieldName', () => {
     done();
   });
 });
-
-
 
 //if successful returns an Int
 describe('fieldPrecise', () => {
@@ -425,8 +399,6 @@ describe('fieldScale', () => {
   });
 });
 
-
-
 //if successful returns undefined
 describe('setStmtAttr', () => {
   it('sets StmtAttr Attrubte should be INT. Value can String or Int depending on the attribute', async () => {
@@ -439,22 +411,18 @@ describe('setStmtAttr', () => {
   });
 });
 
-
-
 //if successful returns String or Int depending on attribute
 describe('getStmtAttr', () => {
   it('if statement attribute exsits should return type String or Int depending on the attribute type', async () => {
     let attr = dba.SQL_ATTR_FOR_FETCH_ONLY;
     let dbStmt = new dba.Connection().connect().getStatement();
     let result = await dbStmt.getStmtAttr(attr);
-    console.log(`Smt Attr: ${result}`);
+    console.log(`Stmt Attr: ${result}`);
     expect(result).to.satisfy(function(result){
       return result === 'string' || typeof result === 'number';
     });
   });
 });
-
-
 
 // whats the passing use case for next Result?
 // describe('nextResult', () => {

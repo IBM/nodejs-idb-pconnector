@@ -1,85 +1,38 @@
 /**
- * A temporary sanity tests to make sure operations perform as desired.
- * Was created Because Mocha was reporting that the Async Tests within 
+ * Temporary sanity tests to verify operations perform as desired.
+ * Was created Because Mocha was reporting that the Async Tests within
  * statementTest.js were taking longer than 2000ms
  * These test cases were made to check the actual time taken.
  * All were took less than 2000 ms.
+ * see mocha-issue.txt for more info.
  * Comment out the function calls and run node to try for yourself.
 */
 
 const dba = require('../lib/idb-pconnector');
 const idbp = require('../lib/idb-pconnector');
-const connPool = new idbp.DBPool({}, {debug: true});
-const DBPoolConnection = require('../lib/dbPool.js').DBPoolConnection;
+const connPool = new idbp.DBPool();
 const expect = require('chai').expect;
 
 async function exec() {
-  let sql = 'SELECT * FROM QIWS.QCUSTCDT',
+  let sql = 'SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = 938472',
     dbConn = new dba.Connection();
 
   dbConn.debug(true);
   let dbStmt = dbConn.connect().getStatement();
 
   console.time('exec');
-  let res = await dbStmt.exec(sql);
-
-  console.log('Type of Res = ' + typeof res);
-  console.log('Select results: ' + JSON.stringify(res));
+  let result = await dbStmt.exec(sql);
   console.timeEnd('exec');
+
+  expect(result).to.be.an('array');
+  expect(result.length).to.be.greaterThan(0);
+  console.log(`Exec results: ${JSON.stringify(result)}`);
+
 }
 
-// exec();
-
-async function fetchAll(){
-  console.log('\nFetchAll Test Case\n');
-  let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-    dbConn = new dba.Connection();
-  dbConn.debug(true);
-  let dbStmt = dbConn.connect().getStatement();
-  dbStmt.dbc.debug(true);
-  let bal = 0;
-  try {
-    console.time('fetchAll');
-    await dbStmt.prepare(sql);
-    await dbStmt.execute();
-    let result = await dbStmt.fetchAll();
-    console.timeEnd('fetchAll');
-    console.log(`Fetch All results:\n ${JSON.stringify(result)}`);
-    console.log(`Size of the returned array: ${result.length}`);
-  } catch (error){
-    console.error(error.stack);
-  }
-}
-// fetchAll();
-
-async function fetch(){
-  console.log('\n**********************************************************\n');
-  console.log('\nFetch Test Case\n');
-  let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-    dbConn = new dba.Connection();
-  dbConn.debug(true);
-  let dbStmt = dbConn.connect().getStatement(),
-    bal = 0;
-  dbStmt.dbc.debug(true);
-
-  try {
-    console.time('fetch');
-    await dbStmt.prepare(sql);
-    await dbStmt.execute();
-    let result = await dbStmt.fetch();
-    console.timeEnd('fetch');
-    console.log(`Fetch result:\n ${JSON.stringify(result)}`);
-    console.log(`Size of the returned array: ${result.length}`);
-  } catch (error){
-    console.error(error.stack);
-  }
-}
-
-// fetch();
-
+//exec();
 
 async function execute(){
-  console.log('\nExecute Test Case\n');
   let sql = 'CALL AMUSSE.MAXBAL(?)',
     dbConn = new dba.Connection(),
     bal = 0;
@@ -92,10 +45,59 @@ async function execute(){
   let result = await dbStmt.execute();
   console.timeEnd('execute');
 
+  expect(result).to.be.a('array');
+  expect(result.length).to.be.greaterThan(0);
+
   console.log(`ExecuteAsync results:\n ${JSON.stringify(result)}`);
-  console.log(`TypeOf ExecuteAsync results: ${typeof (result)}`);
   console.log(`Length of results: ${result.length}`);
+
 }
+
+//execute();
+
+async function fetchAll(){
+  console.log('\nFetchAll Test Case\n');
+  let sql = 'SELECT * FROM QIWS.QCUSTCDT',
+    dbConn = new dba.Connection();
+
+  dbConn.debug(true);
+  let dbStmt = dbConn.connect().getStatement();
+  console.time('fetchAll');
+  await dbStmt.prepare(sql);
+  await dbStmt.execute();
+  let result = await dbStmt.fetchAll();
+  console.timeEnd('fetchAll');
+
+  expect(result).to.be.a('array');
+  expect(result.length).to.be.greaterThan(0);
+
+  console.log(`Fetch All results:\n ${JSON.stringify(result)}`);
+  console.log(`Size of the returned array: ${result.length}`);
+}
+//fetchAll();
+
+async function fetch(){
+  let sql = 'SELECT * FROM QIWS.QCUSTCDT',
+    dbConn = new dba.Connection();
+  dbConn.debug(true);
+  let dbStmt = dbConn.connect().getStatement();
+
+  console.time('fetch');
+  await dbStmt.prepare(sql);
+  await dbStmt.execute();
+  let result = await dbStmt.fetch();
+  console.timeEnd('fetch');
+  expect(result).to.be.a('object');
+
+  while (result !== null ){
+    console.log(`Fetch result:\n ${JSON.stringify(result)}`);
+    result = await dbStmt.fetch();
+  }
+}
+
+//fetch();
+
+
 //////////////////////////////////////
 ///        DBPool Test             ///
 //////////////////////////////////////
@@ -104,15 +106,45 @@ async function prepareExecute(){
   console.time('prepareExecute');
   let cusNum = 938472,
     results = await connPool.prepareExecute('SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = ?', [cusNum]);
+
   console.timeEnd('prepareExecute');
-  console.log(results);
-  expect(results).to.be.an('array') && expect(results.length).to.be.gt(0) || expect(result).to.be.null;
+  expect(results).to.be.an('array');
+  expect(results.length).to.be.gt(0);
+  console.log(`PrepareExecute Results: \n${JSON.stringify(results)}`);
 }
-prepareExecute();
+//prepareExecute();
 
 async function runSql(){
   console.time('runSql');
   let results = await connPool.runSql('SELECT * FROM QIWS.QCUSTCDT');
+
   console.timeEnd('runSql');
-  expect(results).to.be.an('array') && expect(results.length).to.be.gt(0) || expect(result.to.be.null);
+  console.log(`RunSQL Results: \n${JSON.stringify(results)}`);
+  expect(results).to.be.an('array');
+  expect(results.length).to.be.gt(0);
 }
+//runSql();
+
+async function detach(){
+  //get the conn
+  let conn =  await connPool.attach();
+  //perform some stmts
+  await conn.getStatement().exec('SELECT * FROM QIWS.QCUSTCDT');
+  console.log(`\n${JSON.stringify(conn)}`);
+
+  let stmtBefore = conn.statement,
+    id = conn.poolIndex;
+  await conn.detach();
+
+  let detached = connPool.connections[id],
+    stmtAfter = detached.statement;
+
+  //after being detached available should be true again
+  expect(detached.available).to.be.true;
+  //make sure the statement was cleared
+  expect(stmtBefore).to.not.equal(stmtAfter);
+  await connPool.detach(conn);
+}
+//detach();
+
+

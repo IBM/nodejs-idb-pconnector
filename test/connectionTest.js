@@ -15,7 +15,6 @@ describe('connect', () => {
   });
 });
 
-
 describe('getStatement', () => {
   it('should return a new statemetnt intiialized with the the dbconn', async () => {
     let dbConn = new dba.Connection().connect();
@@ -81,8 +80,6 @@ describe('disconn', () => {
     expect(res).to.be.a('undefined');
   });
 });
-
-
 
 //if successful returns undefined
 describe('close', () => {

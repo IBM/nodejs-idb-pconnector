@@ -1,6 +1,7 @@
 /**
  * Moved Failure tests into own File.
  * Still needs to be finished.
+ *  Will get back to it once the Mocha Testing issue is resolved.
 */
 
 const assert = require('chai').assert;
