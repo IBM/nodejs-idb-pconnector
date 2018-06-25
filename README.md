@@ -1,6 +1,6 @@
 # idb-pconnector
 
-Promised-based Db2 Connector for IBM i (pre-alpha, NOT PRODUCTION READY)
+Promised-based Db2 Connector for IBM i (production-ready as a "technology preview")
 The objective of this project is to provide a database connector for Db2 on i that enables usage of the "await" keyword.
 As Well As Providing Connection Pooling Support. The `DBPool` has integrated aggregates that make it easier to Prepare & Execute, Prepare, Bind, & Execute, and Quickly Execute SQL. 
 ## Examples
