@@ -150,6 +150,22 @@ Exec results: [{"CUSNUM":"938472","LSTNAM":"Henning ","INIT":"G K","STREET":"485
     performs action of given SQL String:
     Error: Timeout of 2000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. 
 
+Also tried to return a promise in this manner:
+
+describe.('exec', () => {
+  it('performs action of given SQL String', async () => {
+    dbConn = new dba.Connection();
+    dbConn.debug(true);
+    let dbStmt = dbConn.connect().getStatement(),
+      sql = 'SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = 938472';
+
+    return dbStmt.exec(sql)
+      .then(result => expect(result).to.be.an('array'));
+  });
+});
+
+But Still end up with the same timeout error.
+
 Finally, After trying many options I found that wrapping the test code within a promise itself caused the timeout error to go away.
 BUT this could be a false positive because when deliberately causing an assertion error the test still passes ,
 even though node prints the assertion error to the console.
