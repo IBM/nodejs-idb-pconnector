@@ -1,0 +1,234 @@
+When Testing Async Code that returns a Promise my Mocha Test Cases are either consistently getting this Error Message:
+
+Error: Timeout of 2000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves.
+
+Or Always Passing even if an assertion error occurs. I have performed numerous searches and read many issues but could not find a solution.
+I would like to just use the async & await style for my test cases like the Sample Below:
+
+//what I expect to work but it Errors out with
+//Error: Timeout of 2000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves.
+const dba = require('idb-pconnector');
+const expect = require('chai').expect;
+describe('exec', function(){
+    it('performs action of given SQL String', async function(){
+        dbConn = new dba.Connection();
+        dbConn.debug(true);
+        let dbStmt = dbConn.connect().getStatement(),
+        sql = 'SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = 938472';
+
+        console.time('exec');
+        let result =  await dbStmt.exec(sql);
+        console.timeEnd('exec');
+
+        console.log(`Exec results: ${JSON.stringify(result)}`);
+        expect(result).to.be.an('array');
+        expect(result.length).to.be.greaterThan(0);
+    });
+});
+
+Output:
+exec: 2019.550ms
+Exec results: [{"CUSNUM":"938472","LSTNAM":"Henning ","INIT":"G K","STREET":"4859 Elm Ave ","CITY":"Dallas","STATE":"TX","ZIPCOD":"75217","CDTLMT":"5000","CHGCOD":"3","BALDUE":"37.00","CDTDUE":".00"}]
+
+0 passing (2s)
+1 failing
+
+1) exec
+    performs action of given SQL String:
+    Error: Timeout of 2000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves.
+
+The Strange part is that the result from the query is printed as soon as Mocha timeout.
+I have tried to increase the timeout time using this.timeout() with large numbers to no difference , always timeout;
+I'm sure that the test case does not actually take that long because I have tested it outside of Mocha and consistently am between 30-60 ms.
+
+Here is the exact same code ran outside of Mocha:
+
+const dba = require('idb-pconnector');
+const expect = require('chai').expect;
+
+async function exec() {
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
+        dbConn = new dba.Connection();
+
+    dbConn.debug(true);
+    let dbStmt = dbConn.connect().getStatement();
+
+    console.time('exec');
+    let result = await dbStmt.exec(sql);
+    console.timeEnd('exec');
+
+    expect(result).to.be.an('array');
+    expect(result.length).to.be.greaterThan(0);
+    console.log(`Exec results: ${JSON.stringify(result)}`);
+}
+
+exec();
+
+Output:
+exec: 45.877ms
+Exec results: [{"CUSNUM":"938472","LSTNAM":"Henning ","INIT":"G K","STREET":"4859 Elm Ave ","CITY":"Dallas","STATE":"TX","ZIPCOD":"75217","CDTLMT":"5000","CHGCOD":"3","BALDUE":"37.00","CDTDUE":".00"}]
+
+
+You can clearly see that to perform the query time taken is way less than 2000ms.
+I have tried other solutions like calling done() after the last assertion:
+
+//Also times out
+//Calling done() after last assertion
+const dba = require('idb-pconnector');
+const expect = require('chai').expect;
+
+describe('exec', function(){
+    it('performs action of given SQL String', async function(done){
+        dbConn = new dba.Connection();
+        dbConn.debug(true);
+        let dbStmt = dbConn.connect().getStatement(),
+        sql = 'SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = 938472';
+
+        console.time('exec');
+        let result =  await dbStmt.exec(sql);
+        console.timeEnd('exec');
+
+        console.log(`Exec results: ${JSON.stringify(result)}`);
+        expect(result).to.be.an('array');
+        expect(result.length).to.be.greaterThan(0);
+        done();
+    });
+});
+
+Same error from before is Outputted:
+
+exec: 2017.694ms
+Exec results: [{"CUSNUM":"938472","LSTNAM":"Henning ","INIT":"G K","STREET":"4859 Elm Ave ","CITY":"Dallas","STATE":"TX","ZIPCOD":"75217","CDTLMT":"5000","CHGCOD":"3","BALDUE":"37.00","CDTDUE":".00"}]
+
+
+0 passing (2s)
+1 failing
+
+1) exec
+    performs action of given SQL String:
+    Error: Timeout of 2000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves.
+
+
+Also have tried to return the promise itself:
+
+//Timeout as well
+//returning the promise
+const dba = require('idb-pconnector');
+const expect = require('chai').expect;
+
+describe('exec', function(){
+    it('performs action of given SQL String', async function() {
+    let p = new Promise(async (resolve, reject) => {
+        dbConn = new dba.Connection();
+        dbConn.debug(true);
+        let dbStmt = dbConn.connect().getStatement(),
+        sql = 'SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = 938472';
+
+        console.time('exec');
+        let result =  await dbStmt.exec(sql);
+        console.timeEnd('exec');
+
+        console.log(`Exec results: ${JSON.stringify(result)}`);
+        expect(result).to.be.an('array');
+        expect(result.length).to.be.greaterThan(0);
+    });
+    return p;
+    });
+
+
+
+Also Produces a Timeout Error , Output:
+
+exec: 2038.035ms
+Exec results: [{"CUSNUM":"938472","LSTNAM":"Henning ","INIT":"G K","STREET":"4859 Elm Ave ","CITY":"Dallas","STATE":"TX","ZIPCOD":"75217","CDTLMT":"5000","CHGCOD":"3","BALDUE":"37.00","CDTDUE":".00"}]
+
+
+0 passing (2s)
+1 failing
+
+1) exec
+    performs action of given SQL String:
+    Error: Timeout of 2000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. 
+
+Also tried to return a promise in this manner:
+
+describe.('exec', () => {
+  it('performs action of given SQL String', async () => {
+    dbConn = new dba.Connection();
+    dbConn.debug(true);
+    let dbStmt = dbConn.connect().getStatement(),
+      sql = 'SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = 938472';
+
+    return dbStmt.exec(sql)
+      .then(result => expect(result).to.be.an('array'));
+  });
+});
+
+But Still end up with the same timeout error.
+
+Finally, After trying many options I found that wrapping the test code within a promise itself caused the timeout error to go away.
+BUT this could be a false positive because when deliberately causing an assertion error the test still passes ,
+even though node prints the assertion error to the console.
+
+//Wrapping the test code in a new Promise() gets rid of the Timeout Error BUT...
+//Produces False Positive because Passes even when Unhandled Promise Rejections
+const dba = require('idb-pconnector');
+const expect = require('chai').expect;
+
+describe('exec', function(){
+    it('performs action of given SQL String', async function(done) {
+    new Promise(async (resolve, reject) => {
+        dbConn = new dba.Connection();
+        dbConn.debug(true);
+        let dbStmt = dbConn.connect().getStatement(),
+        sql = 'SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = 938472';
+
+        console.time('exec');
+        let result =  await dbStmt.exec(sql);
+        console.timeEnd('exec');
+
+        console.log(`Type of result = ${typeof result}`);
+        console.log(`Exec results: ${JSON.stringify(result)}`);
+        expect(result).to.be.an('array');
+        //Produce a Promise Rejection
+        expect(result.length).to.be.greaterThan(100);
+    });
+    done();
+    });
+});
+
+exec
+constructed, dbconn={}
+SQLConnect: conn obj [1802d7650] handler [2]
+ExecAsync().
+    ✓ performs action of given SQL String
+
+
+1 passing (31ms)
+
+Exec results: [{"CUSNUM":"938472","LSTNAM":"Henning ","INIT":"G K","STREET":"4859 Elm Ave ","CITY":"Dallas","STATE":"TX","ZIPCOD":"75217","CDTLMT":"5000","CHGCOD":"3","BALDUE":"37.00","CDTDUE":".00"}]
+(node:443133) UnhandledPromiseRejectionWarning: AssertionError: expected 1 to be above 100
+    at Promise
+    at <anonymous>
+(node:443133) UnhandledPromiseRejectionWarning: Unhandled promise rejection. This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch(). (rejection id: 1)
+(node:443133) [DEP0018] DeprecationWarning: Unhandled promise rejections are deprecated. In the future, promise rejections that are not handled will terminate the Node.js process with a non-zero exit code.
+
+I would have expected Mocha to reject the Test because of the Promise rejection , but it always will pass.
+
+It may be that I'm missing something trivial if so point to what is correct way get Async Tests to work using the
+Async & Await Method.
+
+Here is the the implementation of the exec() function being tested: 
+
+async exec(sqlString) {
+let stmt = this.stmt;
+    return new Promise((resolve, reject) => {
+    stmt.exec(sqlString, function (result, error){
+        if (error) {
+        reject(error);
+        } else {
+        resolve(result);
+        }
+    });
+    });
+}
