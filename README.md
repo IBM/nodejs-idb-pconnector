@@ -313,11 +313,10 @@ if a result exists , retrieves a row from the result set
 
 **Returns**: `Promise`, - Promise object represents the row that was retrieved from the execution of fetch(). If there is no data to be fetched null will be returned indicating the end of the result set.
 
-```
-
-Example Fetching a result set until there is no more data to fetch.
-
 ```javascript
+
+- Example Fetching a result set until there is no more data to fetch.
+
 async function fetch(){
   let sql = 'SELECT * FROM QIWS.QCUSTCDT',
     dbConn = new dba.Connection();
