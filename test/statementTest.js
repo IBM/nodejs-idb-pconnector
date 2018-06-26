@@ -147,7 +147,7 @@ describe('commit', () => {
 describe('exec', () => {
   it('performs action of given SQL String', async (done) => {
     new Promise(async (resolve, reject) => {
-      dbConn = new dba.Connection();
+      let dbConn = new dba.Connection();
       dbConn.debug(true);
       let dbStmt = dbConn.connect().getStatement(),
         sql = 'SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = 938472';
