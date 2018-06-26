@@ -277,7 +277,8 @@ Use execute() for stored procedure calls.
      	  sql = 'CALL MYSCHEMA.SAMPLEPROC';
      	 
     	await statement.prepare(sql);
-    	await statement.execute();
+      await statement.execute();
+      //if a result set exists you can fetch it
     	let result = await statement.fetchAll();
     	console.log(`Result is\n: ${JSON.stringify(result)}`);
        }
@@ -310,7 +311,33 @@ Use execute() for stored procedure calls.
 
 if a result exists , retrieves a row from the result set
 
-**Returns**: `Promise | null`, - Promise object represents the row that was retrieved from the execution of fetch(). If there is no data to be fetched null will be returned indicating the end of the result set.
+**Returns**: `Promise`, - Promise object represents the row that was retrieved from the execution of fetch(). If there is no data to be fetched null will be returned indicating the end of the result set.
+
+```
+
+Example Fetching a result set until there is no more data to fetch.
+
+```javascript
+async function fetch(){
+  let sql = 'SELECT * FROM QIWS.QCUSTCDT',
+    dbConn = new dba.Connection();
+
+  dbConn.debug(true);
+  let dbStmt = dbConn.connect().getStatement();
+
+  await dbStmt.prepare(sql);
+  await dbStmt.execute();
+  let result = await dbStmt.fetch();
+
+  while (result !== null ){
+    console.log(`Fetch result:\n ${JSON.stringify(result)}`);
+    result = await dbStmt.fetch();
+  }
+}
+
+fetch();
+
+```
 
 ## Statement.fetchAll()
 
