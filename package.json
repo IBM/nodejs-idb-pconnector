@@ -1,6 +1,6 @@
 {
   "name": "idb-pconnector",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "description": "Promised-based Db2 Connector for IBM i (pre-alpha, NOT PRODUCTION READY)",
   "main": "lib/idb-pconnector.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "idb-connector": "^1.0.12"
   },
   "devDependencies": {
-    "mocha": "^5.1.0",
-    "chai": "^4.1.2"
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0"
   }
 }

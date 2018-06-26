@@ -8,14 +8,18 @@ Simple example of using a prepared statement to insert some values into a table,
 
 ```javascript
 const idbp = require('idb-pconnector');
+
 async function runInsertAndSelect() {
    try {
        let statement =  new idbp.Connection().connect().getStatement();
+       
        await statement.prepare('INSERT INTO MYSCHEMA.TABLE VALUES (?,?)');
-       await statement.bind([ [2018,idbp.SQL_PARAM_INPUT, idbp.SQL_BIND_NUMERIC],
-                           ['Dog' ,idbp.SQL_PARAM_INPUT, idbp.SQL_BIND_CHAR]
-       ]);
+
+       await statement.bind([ [2018, idbp.SQL_PARAM_INPUT, idbp.SQL_BIND_NUMERIC],
+                              ['Dog', idbp.SQL_PARAM_INPUT, idbp.SQL_BIND_CHAR] 
+                            ]);
        await statement.execute();
+
        let result = await statement.exec('SELECT * FROM MYSCHEMA.TABLE');
        console.log(`Select results: \n${JSON.stringify(result)}`);
    } catch(err) {
@@ -35,7 +39,6 @@ const {DBPool} = require('idb-pconnector');
 const pool = new DBPool({}, {debug: true});
 //remember to use await you must wrap within async Function.
 async function poolExample(){
-
  //attach() returns an available connection from the pool.
  let connection = pool.attach(),
    statement = connection.getStatement(),
@@ -56,7 +59,7 @@ async function poolExample(){
    console.log(`Error was: \n\n${err.stack}`);
    pool.retire(connection);
  }
-};
+}
 
 poolExample();
 
@@ -108,8 +111,6 @@ aggregatesRun();
 
 
 ```
-
-
 # API
 
 # Class: Connection
@@ -268,49 +269,88 @@ Use execute() for stored procedure calls.
 ```js
 - Calling a stored Procedure that returns a result set with execute() & displaying the result set.
        
-	  try{
-    	let idbp = require('idb-pconnector');
+  const idbp = require('idb-pconnector');
 
-    	// note that that calling the new Statement() without the DbConn as a parameter
-    	// creates a new connection implicitly and uses that for the Statement.
-    	let statement = new idbp.Statement(),
-     	  sql = 'CALL MYSCHEMA.SAMPLEPROC';
-     	 
+  async function storedProcedure(){
+
+    try {
+      // note that that calling the new Statement() without the DbConn as a parameter
+      // creates a new connection implicitly and uses that for the Statement.
+      let statement = new idbp.Statement(),
+        sql = 'CALL MYSCHEMA.SAMPLEPROC';
+      
     	await statement.prepare(sql);
-    	await statement.execute();
+      await statement.execute();
+      
+      //if a result set exists you can fetch it
     	let result = await statement.fetchAll();
     	console.log(`Result is\n: ${JSON.stringify(result)}`);
-       }
-       catch(error){
+    } catch(error){
     	console.log(error.stack);
-        }
+      }
+  }
 
+  storedProcedure();
+    
 - Insert Example With Prepare , Binding Parameter , and Execution
 	
-	 try {
-    	let idbp = require('idb-pconnector');
+  const idbp = require('idb-pconnector');
   
-    	// note that that calling the new Statement() without the DbConn as a parameter
-    	// creates a new connection implicitly and uses that for the Statement.
-     	let statement = new idbp.Statement();
-     	
-    	await statement.prepare('INSERT INTO MYSCHEMA.MYTABLE VALUES (?,?)');
-    	await statement.bind([ [2018,idbp.SQL_PARAM_INPUT,idbp.SQL_BIND_NUMERIC], [null ,idbp.PARM_TYPE_INPUT, idbp.SQL_BIND_NULL_DATA ] ]);
-     	await statement.execute();
+  async function prepareBindExecute(){
+    try {
+      let statement = new idbp.Statement(),
+        sql = 'INSERT INTO MYSCHEMA.MYTABLE VALUES (?,?)';
 
-    	let result = await statement.exec('SELECT * FROM MYSCHEMA.MYTABLE');
-    	console.log(`Select results: \nJSON.stringify(result)`);
-       }
-       catch (error) {
+      await statement.prepare(sql);
+      //binding a number and null data types
+      await statement.bind([ [2018,idbp.SQL_PARAM_INPUT,idbp.SQL_BIND_NUMERIC], [null ,idbp.PARM_TYPE_INPUT, idbp.SQL_BIND_NULL_DATA ] ]);
+      await statement.execute();
+
+      let result = await statement.exec('SELECT * FROM MYSCHEMA.MYTABLE');
+      console.log(`Select results: \nJSON.stringify(result)`);
+    } catch(error){
     	console.log(error.stack);
-       }
+      }
+  }
+
+  prepareBindExecute();
 ```
 
 ## Statement.fetch()
 
 if a result exists , retrieves a row from the result set
 
-**Returns**: `Promise | null`, - Promise object represents the row that was retrieved from the execution of fetch(). If there is no data to be fetched null will be returned indicating the end of the result set.
+**Returns**: `Promise`, - Promise object represents the row that was retrieved from the execution of fetch(). If there is no data to be fetched null will be returned indicating the end of the result set.
+
+```javascript
+
+- Example Fetching a result set until there is no more data to fetch.
+const idbp = require('idb-pconnector');
+
+async function fetch(){
+  try {
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
+    connection = new idbp.Connection();
+
+    connection.debug(true);
+    let statement = connection.connect().getStatement();
+
+    await statement.prepare(sql);
+    await statement.execute();
+    let result = await statement.fetch();
+
+    while (result !== null ){
+      console.log(`Fetch result:\n ${JSON.stringify(result)}`);
+      result = await statement.fetch();
+    }
+  } catch(error){
+    	console.log(error.stack);
+      }
+}
+
+fetch();
+
+```
 
 ## Statement.fetchAll()
 
