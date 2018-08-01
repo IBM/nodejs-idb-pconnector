@@ -1,7 +1,9 @@
-/**
- * Like The Other Tests these are not behaving as expected
- * See Notes in mocha-issue.txt
- */
+/*
+* Test case for the idb-pconnector DBPool Class Functions.
+* Automated test Framework Mocha & assertion library Chai was used to create the test cases
+* You may need to download those modules to run these tests on your machine
+* To see results of individual test cases you can run npm test -g name_of_test
+*/
 
 const expect = require('chai').expect;
 const idbp = require('../lib/idb-pconnector');
@@ -34,33 +36,31 @@ describe('attach', async () => {
   });
 });
 //could give assertion error (red herring?) , see detatch test in manualTest.js
-describe.only('detach', async () => {
-  it('should make the connection available again and clear stmts', async (done) => {
-    new Promise( async (resolve, reject) =>{
-      //get the conn
-      let conn =  await connPool.attach();
-      //perform some stmts
-      await conn.getStatement().exec('SELECT * FROM QIWS.QCUSTCDT');
-      console.log(`\n${JSON.stringify(conn)}`);
+describe('detach', async () => {
+  it('should make the connection available again and clear stmts', async () => {
+    //get the conn
+    let conn =  await connPool.attach();
+    //perform some stmts
+    await conn.getStatement().exec('SELECT * FROM QIWS.QCUSTCDT');
+    console.log(`\n${JSON.stringify(conn)}`);
 
-      let stmtBefore = conn.statement,
-        id = conn.poolIndex;
-      await conn.detach();
+    let stmtBefore = conn.statement,
+      id = conn.poolIndex;
+    await conn.detach();
 
-      let detached = connPool.connections[id],
-        stmtAfter = detached.statement;
+    let detached = connPool.connections[id],
+      stmtAfter = detached.statement;
 
       //after being detached available should be true again
-      expect(detached.available).to.be.true;
-      //make sure the statement was cleared
-      expect(stmtBefore).to.not.equal(stmtAfter);
-      await connPool.detach(conn);
-    });
-    done();
+    expect(detached.available).to.be.true;
+    //make sure the statement was cleared
+    expect(stmtBefore).to.not.equal(stmtAfter);
+    await connPool.detach(conn);
+
   });
 });
 
-describe.only('detachAll', async () => {
+describe('detachAll', async () => {
   it('should return all connections back to available', async () => {
     //ensure all connections reset before attaching all
     await connPool.detachAll();
@@ -84,7 +84,7 @@ describe.only('detachAll', async () => {
   });
 
 });
-describe.only('retire', async () => {
+describe('retire', async () => {
   it('should remove a connection from the pool', async () => {
     let conn = await connPool.attach(),
       id = conn.poolIndex,
@@ -99,7 +99,7 @@ describe.only('retire', async () => {
     });
   });
 });
-describe.only('retireAll', async () => {
+describe('retireAll', async () => {
   it('should remove all connection from the pool', async () => {
     log('Length Before: '+ connPool.connections.length);
     await connPool.retireAll();
@@ -108,29 +108,22 @@ describe.only('retireAll', async () => {
     expect(connPool.connections.length).to.equal(0);
   });
 });
-describe.only('runSql', async () => {
-  it('should execute sql and return result set as an array if available , or return null', async (done) => {
-    new Promise(async () => {
-      let results = await connPool.runSql('SELECT * FROM QIWS.QCUSTCDT');
-      expect(results).to.be.an('array');
-      expect(results.length).to.be.gt(0);
-    });
-    done();
+describe('runSql', async () => {
+  it('should execute sql and return result set as an array if available , or return null', async () => {
+    let results = await connPool.runSql('SELECT * FROM QIWS.QCUSTCDT');
+    expect(results).to.be.an('array');
+    expect(results.length).to.be.gt(0);
   });
 });
-//could give assertion error (red herring?) , try manual prepareExecute test in manualTest.js
-describe.only('prepare, bind, execute', async () => {
+describe('prepare, bind, execute', async () => {
   it('should prepare bind and execute , return output params if available or result set if available',
-    async (done) => {
-      new Promise(async (resolve, reject) =>{
-        let cusNum = 938472,
-          results = await connPool.prepareExecute('SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = ?', [cusNum]);
+    async () => {
+      let cusNum = 938472,
+        results = await connPool.prepareExecute('SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = ?', [cusNum]);
 
-        console.log(results);
-        expect(results).to.be.an('array');
-        expect(results.length).to.be.gt(0);
-      });
-      done();
+      console.log(results);
+      expect(results).to.be.an('array');
+      expect(results.length).to.be.gt(0);
     });
 });
 
