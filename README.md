@@ -210,14 +210,20 @@ statement.bindParam([
         ]);
         
        IN/OUT TYPE CAN BE:
-           1.SQL_PARAM_INPUT  
-           2.SQL_PARAM_OUTPUT
-           3.SQL_PARAM_INPUT_OUTPUT
+          - SQL_PARAM_INPUT
+          - SQL_PARAM_OUTPUT
+          - SQL_PARAM_INPUT_OUTPUT
+          
        INDICATORS CAN BE:
-           1. SQL_BIND_CLOB
-           2. SQL_BIND_CHAR
-           3. SQL_BIND_NUMERIC
-           4. SQL_BIND_NULL_DATA
+           - SQL_BIND_CHAR
+           - SQL_BIND_INT
+           - SQL_BIND_NUMERIC
+           - SQL_BIND_BINARY
+           - SQL_BIND_BLOB
+           - SQL_BIND_CLOB
+           - SQL_BIND_BOOLEAN
+           - SQL_BIND_NULL_DATA
+      
 ```
 
 ## Statement.bind(params)
