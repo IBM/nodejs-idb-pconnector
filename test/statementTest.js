@@ -24,7 +24,7 @@ describe('prepare', () => {
   });
 });
 
-describe.only('bindParams', () => {
+describe('bindParams', () => {
   it('associate parameter markers in an SQL statement to app variables', async () => {
 
     let sql = 'INSERT INTO QIWS.QCUSTCDT(CUSNUM,LSTNAM,INIT,STREET,CITY,STATE,ZIPCOD,CDTLMT,CHGCOD,BALDUE,CDTDUE) VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE',
