@@ -1,3 +1,10 @@
+/*
+* Test case for the idb-pconnector DBPool Class Functions.
+* Automated test Framework Mocha & assertion library Chai was used to create the test cases
+* You may need to download those modules to run these tests on your machine
+* To see results of individual test cases you can run npm test -g name_of_test
+*/
+
 const assert = require('chai').assert;
 const expect = require('chai').expect;
 const dba = require('../lib/idb-pconnector');
@@ -58,7 +65,7 @@ describe('setConnAttr', () => {
     let value = 2;
     let dbConn = new dba.Connection().connect();
     let res = await dbConn.setConnAttr(attr, value);
-    expect(res).to.be.a('undefined');
+    expect(res).to.be.true;
   });
 });
 
@@ -68,7 +75,7 @@ describe('debug', () => {
     let choice = true;
     let dbConn = new dba.Connection().connect();
     let res = await dbConn.debug(choice);
-    expect(res).to.be.a('undefined');
+    expect(res).to.be.true;
   });
 });
 
@@ -77,7 +84,7 @@ describe('disconn', () => {
   it('disconnects an exsisting connection to the datbase. ', async () => {
     let dbConn = new dba.Connection().connect();
     let res = await dbConn.disconn();
-    expect(res).to.be.a('undefined');
+    expect(res).to.be.true;
   });
 });
 
@@ -85,7 +92,8 @@ describe('disconn', () => {
 describe('close', () => {
   it('frees the connection object. ', async () => {
     let dbConn = new dba.Connection().connect();
+    await dbConn.disconn();
     let res = await dbConn.close();
-    expect(res).to.be.a('undefined');
+    expect(res).to.be.true;
   });
 });
