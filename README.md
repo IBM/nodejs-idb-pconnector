@@ -1,43 +1,86 @@
-# idb-pconnector
+# **idb-pconnector - promised based DB2 Connector for IBM i**
+**Project Status**: (production-ready as a "technology preview")
 
-Promised-based Db2 Connector for IBM i (production-ready as a "technology preview")
-The objective of this project is to provide a database connector for Db2 on i that enables usage of the "await" keyword.
-As Well As Providing Connection Pooling Support. The `DBPool` has integrated aggregates that make it easier to Prepare & Execute, Prepare, Bind, & Execute, and Quickly Execute SQL. 
-## Examples
-Simple example of using a prepared statement to insert some values into a table, then querying all contents of that table:
+The objective of this project is to provide a promise based database connector API for DB2 on IBM i. 
+This project is a wrapper over the [`idb-connector`](https://bitbucket.org/litmis/nodejs-idb-connector) project but returning promises instead of using callbacks.
+
+Connection Pooling is supported giving you better control.
+The `DBPool` class includes integrated aggregates (prepareExecute, runSql), which make it easier to Prepare & Execute & directly Execute SQL. When using the aggregates opening and closing of statements will be handled by the pool.
+
+Using Node version ^8.X.X you can take advantage of async & await to simplifying your code.
+Remember to use the `await` keyword your code must be wrapped within an `async function`.
+
+Please refer to the documentation below for installation and usage of the `idb-pconnector`.
+
+[TOC]
+
+# **Install**
+This project is a Node.js module available through npm (node package manager).
+
+Once you have Node.js installed, you can run the following command: 
+
+`npm install idb-pconnector`
+
+# **Examples**
+
+### exec
+Using Async & Await, to run a select statement & displaying the result set:
+
+
+```javascript
+const {Connection} = require('idb-pconnector');
+
+async function execExample() {
+  try {
+    let statement =  new Connection().connect().getStatement();
+
+    let result = await statement.exec('SELECT * FROM MYSCHEMA.TABLE');
+    
+    console.log(`Select results: \n${JSON.stringify(result)}`);
+
+  } catch(error) {
+       console.error(`Error was: \n${error.stack}`);
+    }
+}
+
+execExample();
+
+```
+### prepare bind execute
+Using Async & Await, to prepare, bind, and execute an insert statement:
 
 ```javascript
 const idbp = require('idb-pconnector');
+const Connection = idbp.Connection;
 
-async function runInsertAndSelect() {
-   try {
-       let statement =  new idbp.Connection().connect().getStatement();
-       
-       await statement.prepare('INSERT INTO MYSCHEMA.TABLE VALUES (?,?)');
+async function pbeExample() {
+  try {
+    let statement =  new Connection().connect().getStatement();
 
-       await statement.bind([ [2018, idbp.SQL_PARAM_INPUT, idbp.SQL_BIND_NUMERIC],
-                              ['Dog', idbp.SQL_PARAM_INPUT, idbp.SQL_BIND_CHAR] 
-                            ]);
-       await statement.execute();
+    await statement.prepare('INSERT INTO MYSCHEMA.TABLE VALUES (?,?)');
 
-       let result = await statement.exec('SELECT * FROM MYSCHEMA.TABLE');
-       console.log(`Select results: \n${JSON.stringify(result)}`);
-   } catch(err) {
-       console.log(`Error was: \n${err.stack}`);
-   }
+    await statement.bind([
+      [2018, idbp.PARAM_INPUT, idbp.BIND_INT],
+      ['example', idbp.PARAM_INPUT, idbp.BIND_STRING]
+    ]);
+    await statement.execute();
+
+  } catch(error) {
+       console.error(`Error was: \n${error.stack}`);
+    }
 }
 
-runInsertAndSelect();
+pbeExample();
 
 ```
+### DBPool
 
-Example Using DBPool to attach a connection , execute a stored procedure , and executing a simple select statement. Finally detach the connection.
+Using DBPool to attach a connection , execute a stored procedure , and finally detach the connection.
 
 ```javascript
 const {DBPool} = require('idb-pconnector');
-//set the debug to true to view verbose output call
-const pool = new DBPool({}, {debug: true});
-//remember to use await you must wrap within async Function.
+const pool = new DBPool();
+
 async function poolExample(){
  //attach() returns an available connection from the pool.
  let connection = pool.attach(),
@@ -55,8 +98,8 @@ async function poolExample(){
    //closes statements makes the Connection available for reuse.
    await pool.detach(connection);
 
- } catch (err){
-   console.log(`Error was: \n\n${err.stack}`);
+ } catch (error){
+   console.log(`Error was: \n\n${error.stack}`);
    pool.retire(connection);
  }
 }
@@ -65,278 +108,264 @@ poolExample();
 
 
 ```
-Example Using DBPool aggregates to Prepare & Execute , Prepare Bind Execute , and Execute a statement.
+### prepareExecute
+
+Example Using DBPool prepareExecute(sql,params,options) method to Prepare and Execute a statement.
+If you want to bind variables pass an array of values as the second parameter.
 
 ```javascript
 const {DBPool} = require('idb-pconnector');
-//optional to set the debug to true to view verbose output call
-const pool = new DBPool({}, {debug: true});
-//remember to use await you must wrap within async Function.
-async function aggregatesRun(){
+const pool = new DBPool();
+
+async function prepareExecuteExample(){
  //Prepare and execute an SQL statement.
  try {
-   console.log('\Prepare and Execute\n');
-   let results = await pool.prepareExecute("CALL QIWS.GET_MEMBERS('QIWS','QCUSTCDT')");
-    if (results !== null) {
-     console.log(`\n\n${JSON.stringify(results)}\n\n`);
-   }
    /*
-   Params are passed as an array values.
-   The order of the params indexed in the array should map to the order of the parameter markers(i.e. '?').
- */
-   console.log('\nPrepare Bind & Execute\n');
+   * Params are passed as an array values.
+   * The order of the params indexed in the array should map to the order of the parameter markers(i.e. '?').
+   */
    let sql = 'INSERT INTO QIWS.QCUSTCDT VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE',
      params = [4949, 'Johnson', 'T J', '452 Broadway', 'MSP', 'MN', 9810, 2000, 1, 250, 0.00],
-     results2 = await pool.prepareExecute(sql, params);
+     data = await pool.prepareExecute(sql, params);
 
-   if (results2 !== null){
-     console.log(`\n\n${JSON.stringify(results2)}\n\n`);
+   if (data !== null){
+     let {resultSet} = data;
+     console.log(`\n\n${JSON.stringify(resultSet)}\n\n`);
    }
-   /*
-   Quickly execute a statement by providing the SQL to the runSql() function
-   NOTE: Stored Procedures should use the prepareExecute() method instead.
- */
-   console.log('\nRun a Query\n');
-   let results3 = await pool.runSql(`SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = ${params[0]}`);
-    if (results3 !== null) {
-     console.log(`\n${JSON.stringify(results3)}`);
-   }
-   console.log('\nDone');
 
- } catch (err){
-   console.log(`Error was: ${err.stack}`);
+ } catch (error){
+   console.log(`Error was: ${error.stack}`);
  }
 }
-aggregatesRun();
 
+prepareExecuteExample();
 
 ```
-# API
+### runSql
+
+Example Using DBPool runSql(sql) method to directly run an sql statement.
+NOTE: This method will not work with stored procedures use prepareExecute() instead.
+
+```javascript
+const {DBPool} = require('idb-pconnector');
+const pool = new DBPool();
+
+async function runSqlExample(){
+  /*
+  * Directly execute a statement by providing the SQL to the runSql() function.
+  * NOTE: Stored Procedures must use the prepareExecute() method instead.
+  */
+ try {
+
+   let result = await pool.runSql('SELECT * FROM QIWS.QCUSTCDT');
+
+    if (result !== null) {
+     console.log(`\n${JSON.stringify(result)}`);
+   }
+
+ } catch (error){
+   console.log(`Error was: ${error.stack}`);
+ }
+}
+
+runSqlExample();
+
+```
+
+# **API Documentation**
 
 # Class: Connection
 
+## Constructor: Connection()
+The Connection constructor accepts an optional `db` parameter which can be used to connect to the database. If `db` is not provided make sure to use the `connect()` before performing any other methods.
 
-## Connection.connect(dbname)
+**Parameters**:
+- **db**: `Object` includes the properties `url` location of the database, use '*LOCAL' for a local database, `username` for the database user, `password` for the databse user. If connecting using '*LOCAL' it is not required to pass the `username` & `password` but ensure that the the object contains `url: '*LOCAL'`.
+
+## Connection.connect(url, username, password)
 
 Establishes a Connection to the database.
 
-**Parameters**
+**Parameters**:
 
-**dbname**: `string`, the name of the database to connect to. If a name is not specified, the dbname is defaulted to "*LOCAL".
+- **url**: `String` the url of the database to connect to. If a url is not specified, it defaults to "*LOCAL".
 
-**Returns**: `object`, - the dbConn Object with an established connection.
+- **username**: `String` the username for the database user.
+
+- **password**: `String` the password for the database user.
+
+**Returns**: `Object` the Connection object with an established connection.
 
 ## Connection.getStatement()
 
-returns a Statement Object initialized to the current dbConn Connection.
+Returns a Statement Object initialized to the current Connection. Ensure that the Connection object is connected first before attempting to  get a Statement. The [isConnected](#markdown-header-connectionisconnected) method can be used to check if the Connection object is currently connected
 
-**Returns**: `object`, - a new Statement initialized with the current dbconn.
+**Returns**: `Object` a new Statement initialized with the current Connection.
 
 ## Connection.close()
 
-closes the Connection to the DB and frees the connection object.
+Closes the Connection to the DB and frees the connection object.
 
-**Returns**: `Promise`, - Promise object represents the closure of the Connection.
+**Returns**: `Promise` when resolved will return `true` indicating successful closure, or the promise will be rejected.
 
 ## Connection.disconn()
 
-disconnects an existing connection to the database.
+Disconnects an existing connection to the database.
 
-**Returns**: `Promise`, - Promise object represents the disconnect of the Connection.
+**Returns**: `Promise` when resolved will return `true` indicating successful disconnection, or the promise will be rejected.
 
 ## Connection.debug(choice)
 
-prints more detailed info if choice = true. Turned off by setting choice = false.
+Prints verbose detailed info to the console if choice is set `true`. Can be turned off by setting choice = false.
 
-**Parameters**
+**Parameters**:
 
-**choice**: `boolean`, the option either true or false to turn on debugging.
+- **choice**: `boolean` the option either true or false to turn debug on/off.
 
-**Returns**: `Promise`, - Promise object represents the debug method being set to the choice specified.
+**Returns**: `Promise` when resolved will return `true | false` indicating the current state of debug, or the promise will be rejected.
 
 ## Connection.getConnAttr(attribute)
 
-if connection attribute exists should return type String or Int depending on the attribute type
+If the `attribute` exists will return the current value of the attribute.
 
-**Parameters**
+**Parameters**:
 
-**attribute**: `number`, if connection attribute exists should return type String or Int depending on the attribute type
+- **attribute**: `Number` the attribute to retrieve the current value from.
 
-**Returns**: `Promise`, - Promise object represents the the current settings for the specified connection attribute.
+**Returns**: `Promise` when resolved  will return the specified connection attribute settings either `Number | String`, or the promise will be rejected.
 
 **Link**:
-[Further Documentation ON Connection Attributes](https://www.ibm.com/support/knowledgecenter/en/ssw\_ibm\_i_73/cli/rzadpfnsconx.htm)
+[Connection Attributes](https://www.ibm.com/support/knowledgecenter/en/ssw\_ibm\_i_73/cli/rzadpfnsconx.htm)
+
+## Connection.isConnected()
+
+Checks if the Connection object is currentl connected to the database.
+
+**Returns**: `true` or `false` indicating if the Connection object is currently connected.
+
 ## Connection.setConnAttr(attribute, value)
 
-Sets the ConnAttr , Attribute should be INT.
+Sets the the value for a given `attribute`.
 
-**Parameters**
+**Parameters**:
 
-**attribute**: `number`, the attribute to be set refer to the getConAttr example to view available attributes.
+- **attribute**: `Number` the attribute to be set.
 
-**value**: `string | number`, the value to set the attribute to. Can be String or Int depending the attribute.
+- **value**: `string | number` the value to set the attribute to.
 
-**Returns**: `Promise`, - Promise object represents the execution of the setConnAttr().
+**Returns**: `Promise` when resolved will return `true` indicating success or the promise will be rejected.
 
-### Connection.validStmt(sql)
+## Connection.validStmt(sql)
 
 Checks if the given SQL is valid and interprets vendor escape clauses.
 
-**Parameters**
+**Parameters**:
 
-**sql**: `string`, the sql string to be validated.
+- **sql**: `String`, the sql string to be validated.
 
-**Returns**: `Promise`, - Promise object represents the transformed SQL string that is seen by the data source.
+**Returns**: `Promise` when resolved will return the transformed sql string that is seen by the data source, or the promise will be rejected.
 
-- - -
+
 # Class: Statement
 
+## Constructor: Statement(connection)
+
+**Parameters**:
+
+- **connection**: optional `dbconn` Object for the connection to use. If you don't pass a `connection` one will be implicitly created and used for the statement.
 
 ## Statement.bindParam(params)
 
-associates parameter markers in an SQL statement to app variables.
+Associates parameter markers in an sql statement to application variables.
 
-**Parameters**
+**Parameters**:
 
-**params**: `Array`, this should be an Array of the parameter list. Each parameter element will also be an Array with 3 values ( Value, In/out Type ,Indicator ).
+- **params**: `Array` the parameter list in order corresponding to the parameter markers. Each parameter element will also be an Array with 3 values ( value, in/out type ,indicator ).
 
-**Returns**: `Promise`, - Promise object represents the execution of bindParam().
 
-**Example**:
-```js
-statement.bindParam([
-       [2099, dba.SQL_PARAM_INPUT, dba.SQL_BIND_NUMERIC],
-       ['Node.Js', dba.SQL_PARAM_INPUT,dba.SQL_BIND_CHAR]
-        ]);
-        
+```
        IN/OUT TYPE CAN BE:
-          - SQL_PARAM_INPUT
-          - SQL_PARAM_OUTPUT
-          - SQL_PARAM_INPUT_OUTPUT
+          - SQL_PARAM_INPUT or PARAM_INPUT
+          - SQL_PARAM_OUTPUT or PARAM_OUTOUT
+          - SQL_PARAM_INPUT_OUTPUT or INPUT_OUTPUT
           
        INDICATORS CAN BE:
-           - SQL_BIND_CHAR
-           - SQL_BIND_INT
-           - SQL_BIND_NUMERIC
-           - SQL_BIND_BINARY
-           - SQL_BIND_BLOB
-           - SQL_BIND_CLOB
-           - SQL_BIND_BOOLEAN
-           - SQL_BIND_NULL_DATA
+           - SQL_BIND_CHAR or BIND_STRING
+           - SQL_BIND_INT or BIND_INT
+           - SQL_BIND_NUMERIC or BIND_NUMERIC
+           - SQL_BIND_BINARY or BIND_BINARY
+           - SQL_BIND_BLOB or BIND_BINARY
+           - SQL_BIND_CLOB or BIND_CLOB
+           - SQL_BIND_BOOLEAN or BIND_BOOLEAN
+           - SQL_BIND_NULL_DATA or BIND_NULL
       
 ```
+These values are constants which are attached to object returned when you `const idbp = require('idb-pconnector')`.
+
+You can access said values like so : `idbp.PARAM_INPUT`
+
+**Returns**: `Promise` when resolved there is no return value but if an error occurred the promise will be rejected.
+
+**Example**: [Here](#markdown-header-prepare-bind-execute)
 
 ## Statement.bind(params)
 
-Shorthand for bindParam
-
-**Parameters**
-
-**params**: `Array`, this should be an Array of the parameter list. Each parameter element will also be an Array with 3 values ( Value, In/Out Type ,Indicator ).
+Shorthand equivalent of bindParam(params) above.
 
 
 ## Statement.close()
 
 Ends and frees the statement object.
 
-**Returns**: `Promise`, - Promise object represents the execution of close().
+**Returns**: `Promise` when resolved will return true indicating successful closure, or the promise will be rejected.
 
 ## Statement.closeCursor()
 
-closes the cursor associated with the dbstmt object and discards any pending results.
+Closes the cursor associated with the Statement object and discards any pending results.
 
-**Returns**: `Promise`, - Promise object represents the execution of closeCursor().
+**Returns**: `Promise` when resolved will return true indicating successful closure, or the promise will be rejected.
 
 ## Statement.commit()
 
-adds all changes to the database that have been made on the connection since connect time.
+Adds all changes to the database that have been made on the connection since connect time.
 
-**Returns**: `Promise`, - Promise object represents the execution of Commit().
+**Returns**: `Promise` when resolved will return true indicating successful commit, or the promise will be rejected.
 
-## Statement.exec(sqlString)
+## Statement.exec(sql)
 
-performs action of given SQL String. The exec() method does not work with stored procedure calls use execute() instead.
+Directly executes a given sql String. The exec() method does not work with stored procedure use execute() method instead.
 
-**Parameters**
+**Parameters**:
 
-**sqlString**: `string`, performs action of given SQL String. The exec() method does not work with stored procedure calls use execute() instead.
+- **sql**: `String` the sql command to execute.
 
-**Returns**: , the result set as an array.
-**Returns**: `Promise`, - Promise object represents the result set from the execution of exec().
+**Returns**: `Promise` when resolved if available will return the result set as an `Array` , or the promise will be rejected.
+
+**Example**: [Here](#markdown-header-exec)
 
 ## Statement.execute()
 
-Runs a statement that was successfully prepared using prepare().
-Use execute() for stored procedure calls.
+Runs a statement that was successfully prepared using prepare(). Used to call stored procedure calls. Important to note that execute() will return output parameters and not a result set. If available you can retrieve the result set by either running fetch() or fetchAll().
 
-**Returns**: `Promise`, - Promise object represents the execution of execute().
+**Returns**: `Promise` when resolved if available will return output parameters as an `Array`, or the promise will be rejected.
 
-**Example**:
-```js
-- Calling a stored Procedure that returns a result set with execute() & displaying the result set.
-       
-  const idbp = require('idb-pconnector');
-
-  async function storedProcedure(){
-
-    try {
-      // note that that calling the new Statement() without the DbConn as a parameter
-      // creates a new connection implicitly and uses that for the Statement.
-      let statement = new idbp.Statement(),
-        sql = 'CALL MYSCHEMA.SAMPLEPROC';
-      
-    	await statement.prepare(sql);
-      await statement.execute();
-      
-      //if a result set exists you can fetch it
-    	let result = await statement.fetchAll();
-    	console.log(`Result is\n: ${JSON.stringify(result)}`);
-    } catch(error){
-    	console.log(error.stack);
-      }
-  }
-
-  storedProcedure();
-    
-- Insert Example With Prepare , Binding Parameter , and Execution
-	
-  const idbp = require('idb-pconnector');
-  
-  async function prepareBindExecute(){
-    try {
-      let statement = new idbp.Statement(),
-        sql = 'INSERT INTO MYSCHEMA.MYTABLE VALUES (?,?)';
-
-      await statement.prepare(sql);
-      //binding a number and null data types
-      await statement.bind([ [2018,idbp.SQL_PARAM_INPUT,idbp.SQL_BIND_NUMERIC], [null ,idbp.PARM_TYPE_INPUT, idbp.SQL_BIND_NULL_DATA ] ]);
-      await statement.execute();
-
-      let result = await statement.exec('SELECT * FROM MYSCHEMA.MYTABLE');
-      console.log(`Select results: \nJSON.stringify(result)`);
-    } catch(error){
-    	console.log(error.stack);
-      }
-  }
-
-  prepareBindExecute();
-```
+**Example**: [Here](#markdown-header-prepare-bind-execute)
 
 ## Statement.fetch()
 
-if a result exists , retrieves a row from the result set
+If a result set exists, fetch() will retrieve a row from the result set. The row is an `Object`. Fetch can be continuously run until there is no data. If there is no data to be fetched null will be returned indicating the end of the result set.
 
-**Returns**: `Promise`, - Promise object represents the row that was retrieved from the execution of fetch(). If there is no data to be fetched null will be returned indicating the end of the result set.
+**Returns**: `Promise` when resolved will return an `Object` representing the row that was retrieved. If there is no data remaining to be fetched in the result set `null` will be returned indicating the end of the result set. Or if there was never a result set to be fetched the promise will be rejected.
+
+**Example Fetching a result set until there is no more data to fetch**:
 
 ```javascript
-
-- Example Fetching a result set until there is no more data to fetch.
-const idbp = require('idb-pconnector');
+const {Connection} = require('idb-pconnector');
 
 async function fetch(){
   try {
     let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-    connection = new idbp.Connection();
+    connection = new Connection();
 
     connection.debug(true);
     let statement = connection.connect().getStatement();
@@ -360,246 +389,284 @@ fetch();
 
 ## Statement.fetchAll()
 
-if a result set exists , retrieves all the rows of data from the result set.
+If a result set exists , fetchAll() retrieves all the rows from the result set.
 
-**Returns**: `Promise`, - Promise object represents the the an array containing the result that was retrieved from the execution of fetchAll().
+**Returns**: `Promise` when resolved will return an `Array` of `Objects` representing the result set if its available, or the promise will be rejected.
 
 ## Statement.fieldName(index)
 
-requires an int index parameter. If a valid index is provided, returns the name of the indicated field.
+If a valid index is provided, returns the name of the indicated field.
 
-**Parameters**
+**Parameters**:
 
-**index**: `number`, the position of the field within the table. It is 0 based.
+- **index**: `Number` the position of the field within the table. It is 0 based.
 
-**Returns**: `Promise`, - Promise object represents the the String that was retrieved from the execution of fieldName().
+**Returns**: `Promise` when resolved will return `String` name of the field or the promise will be rejected.
 
 ## Statement.fieldNullable(index)
 
-requires an int index parameter. If a valid index is provided, returns t/f if the indicated field can be Null
+If a valid index is provided, returns `true | false` if the indicated field can be set to `null`.
 
-**Parameters**
+**Parameters**:
 
-**index**: `number`, the position of the field within the table. It is 0 based.
+- **index**: `Number` the position of the field within the table. It is 0 based.
 
-**Returns**: `Promise`, - Promise object represents the the boolean that was retrieved from the execution of fieldNullable().
+**Returns**: `Promise` when resolved will return `true | false` or the promise will be rejected.
 
 ## Statement.fieldPrecise(index)
 
-requires an int index parameter. If a valid index is provided, returns the precision of the indicated field
+If a valid index is provided, returns the precision of the indicated field
 
-**Parameters**
+**Parameters**:
 
-**index**: `number`, the position of the field within the table. It is 0 based.
+- **index**: `Number` the position of the field within the table. It is 0 based.
 
-**Returns**: `Promise`, - Promise object represents the the Number that was retrieved from the execution of fieldPrecisie().
+**Returns**: `Promise` when resolved will return `Number` or the promise will be rejected.
 
 ## Statement.fieldScale(index)
 
-requires an int index parameter. If a valid index is provided, returns the scale of the indicated column
+If a valid index is provided, returns the scale of the indicated column.
 
-**Parameters**
+**Parameters**:
 
-**index**: `number`, the position of the field within the table. It is 0 based.
+- **index**: `Number` the position of the field within the table. It is 0 based.
 
-**Returns**: `Promise`, - Promise object represents the the Number that was retrieved from the execution of fieldScale().
+**Returns**: `Promise` when resolved will return a `Number` or the promise will be rejected.
 
 ## Statement.fieldType(index)
 
-requires an int index parameter. If a valid index is provided, returns the data type of the indicated field
+If a valid index is provided, returns the data type of the indicated field.
 
-**Parameters**
+**Parameters**:
 
-**index**: `number`, the position of the field within the table. It is 0 based.
+- **index**: `Number` the position of the field within the table. It is 0 based.
 
-**Returns**: `Promise`, - Promise object represents the the Number that was retrieved from the execution of fieldType().
+**Returns**: `Promise` when resolved will return a `Number` or the promise will be rejected.
 
 ## Statement.fieldWidth(index)
 
-requires an int index parameter. If a valid index is provided, returns the field width of the indicated field
+If a valid index is provided, returns the field width of the indicated field
 
-**Parameters**
+**Parameters**:
 
-**index**: `number`, the position of the field within the table. It is 0 based.
+- **index**: `Number` the position of the field within the table. It is 0 based.
 
-**Returns**: `Promise`, - Promise object represents the the Number that was retrieved from the execution of fieldWidth().
+**Returns**: `Promise`, when resolved will return a `Number` or the promise will be rejected.
 
 ## Statement.getStmtAttr(attribute)
 
 If a valid Statement attribute is provided , returns the current settings for the specified Statement attribute.
 Refer to the list below for valid Statement Attributes.
 
-**Parameters**
+**Parameters**:
 
-**attribute**: `number`, the statement attribute to get
+- **attribute**: `Number`the attribute to retrieve the current value from.
 
-**Returns**: `Promise`, Promise object represents the the String | Number that was retrieved from the execution of getStmtAttr().
+**Returns**: `Promise`, when resolved will return the specified connection attribute settings as a `Number | String`, or the promise will be rejected.
 
-**Link**:
-[Further Documentaion On Statement Attributes](https://www.ibm.com/support/knowledgecenter/en/ssw_ibm_i_73/cli/rzadpfnsstma.htm)
+**Link**: [Statement Attributes](https://www.ibm.com/support/knowledgecenter/en/ssw_ibm_i_73/cli/rzadpfnsstma.htm)
+
 ## Statement.nextResult()
 
-Determines whether there is more information available on the statement
+Determines whether there is more information available on the statement handle that has been associated with a stored procedure that is returning result sets.
 
-**Returns**: `Promise`, - Promise object represents the execution of nextResult().
+After completely processing the first result set, the application can call nextResult() to determine if another result set is available. If the current result set has unfetched rows, nextResult() discards them by closing the cursor.
+
+**Returns**: `Promise` when resolve `true` will be returned indicating there is another result set or `null` is returned indicating there was not another result set. If an error occurred while processing the promise is rejected.
 
 ## Statement.numFields()
 
-if a result is available , retrieves number of fields contained in result.
+If a result set is available , numFields() retrieves number of fields contained in the result set.
 
-**Returns**: `Promise`, - Promise object represents the Number returned from the execution of numFields().
+**Returns**: `Promise` when resolved `Number` is returned or the promise is rejected.
 
 ## Statement.numRows()
 
-if a query was performed ,retrieves number of rows that were affected by a query
+If a query was performed, retrieves the number of rows that were affected by a query.
 
-**Returns**: `Promise`, - Promise object represents the Number returned from the execution of numRows().
+**Returns**: `Promise` when resolved will return a `Number` or the promise is rejected.
 
-## Statement.prepare(sqlString)
+## Statement.prepare(sql)
 
-If valid SQL is provided . prepares SQL and sends it to the DBMS, if the input SQL Statement cannot be prepared error is thrown.
+If valid sql is provided . prepares the sql and sends it to the DBMS, if the input sql Statement cannot be prepared error is thrown.
 
-**Parameters**
+**Parameters**:
 
-**sqlString**: `string`, the SQL string to be prepared.
+- **sql**: `String`, the SQL string to be prepared.
 
-**Returns**: `Promise`, - Promise object represents the the execution of prepare().
+**Returns**: `Promise` when resolved no value is returned but if an error occurred the promise is rejected.
 
-**Example**:
-```js
-- view the examples located at the execute() method.
-```
+**Example**: [Here](#markdown-header-prepare-bind-execute)
 
 ## Statement.rollback()
 
 Reverts changes to the database that have been made on the connection since connect time or the previous call to commit().
 
+**Returns**: `Promise` when resolved  `true` is returned or promise is rejected.
+
 
 ## Statement.setStmtAttr(attribute, value)
 
-if a valid attribute and value is provided , sets StmtAttr indicate Attribute. Refer to the example @getStmtAttr for a list of valid Statement Attributes.
+Sets the the value for a given attribute.
 
-**Parameters**
+**Parameters**:
 
-**attribute**: `number`, must be an int INT.
+- **attribute**: `Number` the attribute to be set.
 
-**value**: `string | number`, can String or Int depending on the attribute
+- **value**: `string | number` the value to set the attribute to.
 
-**Returns**: `Promise`, - Promise object represents the execution of setStmtAttr().
+- **Returns**: `Promise` when resolved will return `true` indicating success or the promise will be rejected..
 
 ## Statement.stmtError(hType, recno)
 
 Returns the diagnostic information associated with the most recently called function for a particular statement, connection, or environment handler.
 
-**Parameters**
+**Parameters**:
 
-**hType**: `number`, indicates the handler type of diagnostic information.
+- **hType**: `Number`, indicates the handler type of diagnostic information.
 
-**recno**: `number`, indicates which error should be retrieved. The first error record is number 1.
+- **recno**: `Number`, indicates which error should be retrieved. The first error record is number 1.
 
-**Returns**: `Promise`, - Promise object represents Number retrieved from the execution of stmtError().
-
-**Example**:
-```js
+```
 hType can be following values:
  	 SQL_HANDLE_ENV:  Retrieve the environment diagnostic information
 	 SQL_HANDLE_DBC:  Retrieve the connection diagnostic information
      SQL_HANDLE_STMT: Retrieve the statement diagnostic information
 ```
 
-# DBPool API
+**Returns**: `Promise` when resolved returns `String` or the promise is rejected.
 
 
 
 # Class: DBPool
+
 Manages a list of DBPoolConnection instances.
-Constructor to instantiate a new instance of a DBPool class given the `database` and `config`
+Constructor to instantiate a new instance of a DBPool class given the `database` and `config`.
 
 
 ## Constructor: DBPool(database , config)
 
-**Parameters**
+**Parameters**:
 
-**database**: `object`, Object includes the `url`(database name) defaults to *LOCAL, `username`, and `password`. `username` and `password` assumed blank if not specified with non-local URL.
+- **database**: `object` includes the `url` defaults to "*LOCAL", `username`, and `password`. Username & password is optional when connecting to "*LOCAL".
 
-**config**: `object` , Object includes the `incrementSize` and `debug`. IncrementSize sets the desired size of the DBPool. If none specified, defaults to 8 connections. Setting debug = true will display message logs.
+- **config**: `object` with the properties: `incrementSize` and `debug`. IncrementSize is a integer `Number` that sets the desired size of the DBPool defaults to 8 connections. Debug is a `boolean` setting it to true will display verbose output to the console, defaults to false.
+
+**Example**: [Here](#markdown-header-dbpool)
 
 
-### DBPool.createConnection(index)
+## DBPool.createConnection(index)
 
 Instantiates a new instance of DBPoolConnection with an `index` and appends it to the pool.
 Assumes the database of the pool when establishing the connection.
 
-**Parameters**
+**Parameters**:
 
-**index**: `number`, An identifier to id the connection for debug purposes.
+**index**: `Number` an optional identifier to id the connection for debug purposes.
 
 
-### DBPool.detachAll()
+## DBPool.detachAll()
 
 Frees all connections in the pool (Sets "Available" back to true for all)
 closes any statements and gets a new statement.
 
-**Returns**: `boolean`, - true if all were detached successfully
+**Returns**: `true` if all were detached successfully or will return `String` error message if an error occurred.
 
-### DBPool.retireAll()
+## DBPool.retireAll()
 
 Retires (Removes) all connections from being used again
 
-**Returns**: `boolean`, - true if all were retired successfully
+**Returns**: `true` if all were retired successfully, or will return `String` error message if an error occurred.
 
-### DBPool.detach(connection)
+## DBPool.detach(connection)
 
-Frees a connection (Returns the connection "Available" back to true)
+Frees a connection (Returns the connection "Available" back to true) closes any statements and gets a new statement.
+
+**Parameters**:
+
+- **connection**: `DBPoolConnection`, Frees a connection (Returns the connection "Available" back to true)
 closes any statements and gets a new statement.
 
-**Parameters**
 
-**connection**: `DBPoolConnection`, Frees a connection (Returns the connection "Available" back to true)
-closes any statements and gets a new statement.
+**Returns**: `String` error message if an error occurred.
 
+## DBPool.retire(connection)
 
-### DBPool.retire(connection)
+Retires a connection from being used and removes it from the pool.
 
-Retires a connection from being used and removes it from the pool
+**Parameters**:
 
-**Parameters**
+- **connection**: `DBPoolConnection`, Retires a connection from being used and removes it from the pool
 
-**connection**: `DBPoolConnection`, Retires a connection from being used and removes it from the pool
+**Returns**: `String` error message if an error occurred.
 
-
-### DBPool.attach()
+## DBPool.attach()
 
 Finds and returns the first available Connection.
 
-**Returns**: `DBPoolConnection`, - one connection from the DBPool.
+**Returns**: `DBPoolConnection` connection from the `DBPool`.
 
 
 
-### DBPool.runSql(sql)
+## DBPool.runSql(sql)
 
-Shorthand to exec a statement , just provide the sql to run.
+An aggregate to run an sql statement, just provide the sql to run. Note that Stored Procedures should use the prepareExecute() aggregate instead.
 
-**Parameters**
+**Parameters**:
 
-**sql**: `string`, the sql statement to execute.
+- **sql**: `String`, the sql statement to execute.
 
-**Returns**: `array`, - if the SQL returns a result set it is returned as an array of objects.
-else if no result set is available null is returned. caller should check if null is returned.
+**Returns**: 
+- `Array` if the sql returns a result set it is returned as an `Array` of `Objects`.
 
-### DBPool.prepareExecute(sql, params)
+- If no result set is available `null` is returned. Caller should check if `null` is returned.
 
-Shortcut to prepare ,bind, and execute. Just provide the sql and the params as an array.
-
-**Parameters**
-
-**sql**: `string`, the sql to prepare , include parameter markers (?, ?, ...)
-
-**params**: `array`, an optional array of values to bind. order of the values in the array must match the
-order of the desired parameter marker in the sql string.
-
-**Returns**: `array`, - if the Prepared SQL returns result set it is returned as an array of objects.
-else null will be returned indicating that there is no result set.
+**Example**: [Here](#markdown-header-runsql)
 
 
-* * *
+## DBPool.prepareExecute(sql, params, options)
+
+Aggregate to prepare, bind, and execute. Just provide the sql and the optional params as an array.
+
+An `options` object can now be used for global configuration. This is used to set options on all the parameters within the `params` Array. Currently, the input output indicator `io` is the only available option to set. This will override the default which is `'both'`.
+
+**Example**: `prepareExecute(sql, parrams, {io: 'in'})`
+
+Also parameters can be customized at an individual level by passing an object within the parameter list.
+
+The object format: `{value: "string | Number | boolean | null" , io: "in | out | both" , asClob: "true | false"}`
+
+`value` is the only required property others will fallback to defaults.
+
+If you want to bind a string as a clob you can add `asClob: true` property to the object.
+
+**Example**: `{value: 'your string', asClob: true, io: 'in'}`
+
+**Parameters**::
+
+- **sql**: `string`, the sql to prepare , include parameter markers (?, ?, ...)
+
+- **params**: `array`, an optional array of values to bind. order of the values in the array must match the order of the desired parameter marker in the sql string.
+- **options**: `Object` with config options to set for all parameters. The format can be: `{io: 'in' | 'out' | 'both'}` where `io` can be set to either the `String` `'in'`, `'out'`, or `'both'`. Indicating that the parameter is an input, output, or inout parameter.
+
+**Returns**: `Object` in the format: `{resultSet: [], outputParams: []}` if the Prepared SQL returns result set it is returned as an array of objects or if the Prepared SQL returns output parameters it is returned as an array of objects. 
+
+- If neither were available `null` will be returned indicating that there is no result set or output parameters. Caller should check if `null` is returned.
+
+**Example**: [Here](#markdown-header-prepareexecute)
+
+## DBPool.setConnectionAttribute(attribute)
+
+Sets the connection attribute for each a Connection in the pool.
+
+**Parameters**:
+
+- **attribute**: `Object` in the format {attribute: Number (integer), value: Number (integer) | String}
+
+# **License**
+MIT. View [LICENSE](LICENSE)
+
+# **Contributing**
+If you would like to contribute please issue a pull request. No document signing is necessary for this project.
+
+
