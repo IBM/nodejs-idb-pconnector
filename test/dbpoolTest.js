@@ -7,8 +7,9 @@
 
 const expect = require('chai').expect;
 const idbp = require('../lib/idb-pconnector');
-const connPool = new idbp.DBPool({}, {debug: true});
-const DBPoolConnection = require('../lib/dbPool.js').DBPoolConnection;
+const {DBPool} = idbp;
+const connPool = new DBPool({url: '*LOCAL'}, {debug: true});
+const {DBPoolConnection} = require('../lib/dbPool.js');
 const log = console.log;
 
 describe('createConnetion', async () => {
@@ -51,7 +52,7 @@ describe('detach', async () => {
     let detached = connPool.connections[id],
       stmtAfter = detached.statement;
 
-      //after being detached available should be true again
+    //after being detached available should be true again
     expect(detached.available).to.be.true;
     //make sure the statement was cleared
     expect(stmtBefore).to.not.equal(stmtAfter);
@@ -122,8 +123,23 @@ describe('prepare, bind, execute', async () => {
         results = await connPool.prepareExecute('SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = ?', [cusNum]);
 
       console.log(results);
-      expect(results).to.be.an('array');
-      expect(results.length).to.be.gt(0);
+      expect(results).to.be.an('object');
+      expect(results.resultSet).to.be.an('array');
+      expect(results.resultSet.length).to.be.gt(0);
+    });
+});
+
+describe('Set Connection Attribute for Pool', async () => {
+  it('should set a valid connection attribute for the pool.',
+    async () => {
+      let db = {url: '*LOCAL'},
+        attribute = {attribute: idbp.SQL_ATTR_DBC_SYS_NAMING, value: idbp.SQL_FALSE},
+        config = {incrementSize: 3, debug: true};
+
+      const testPool = new DBPool(db, config);
+
+      await testPool.setConnectionAttribute(attribute).catch(error =>{throw error;});
+
     });
 });
 
