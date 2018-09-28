@@ -1,16 +1,33 @@
-const idbp = require('idb-pconnector');
-async function runInsertAndSelect() {
+const {Connection} = require('idb-pconnector');
+
+async function execExample() {
   try {
-    let statement =  new idbp.Connection().connect().getStatement();
-    await statement.prepare('INSERT INTO MYSCHEMA.TABLE VALUES (?,?)');
-    await statement.bind([[2018, idbp.SQL_PARAM_INPUT, idbp.SQL_BIND_NUMERIC],
-      ['Dog' , idbp.SQL_PARAM_INPUT, idbp.SQL_BIND_CHAR]
-    ]);
-    await statement.execute();
+    let statement =  new Connection().connect().getStatement();
+
     let result = await statement.exec('SELECT * FROM MYSCHEMA.TABLE');
+
     console.log(`Select results: \n${JSON.stringify(result)}`);
-  } catch (err) {
-    console.log(`Error was: \n${err.stack}`);
+
+  } catch (error) {
+    console.error(`Error was: \n${error.stack}`);
   }
 }
-runInsertAndSelect();
+
+async function pbeExample() {
+  try {
+    let statement =  new Connection().connect().getStatement();
+
+    await statement.prepare('INSERT INTO MYSCHEMA.TABLE VALUES (?,?)');
+
+    await statement.bind([
+      [2018, idbp.PARAM_INPUT, idbp.BIND_INT],
+      ['example', idbp.PARAM_INPUT, idbp.BIND_STRING]
+    ]);
+    await statement.execute();
+
+  } catch (error) {
+    console.error(`Error was: \n${error.stack}`);
+  }
+}
+
+pbeExample();
