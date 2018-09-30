@@ -1,360 +1,363 @@
+# **API Documentation**
+
 # Class: Connection
 
+## Constructor: Connection()
+The Connection constructor accepts an optional `db` parameter which can be used to connect to the database. If `db` is not provided make sure to use the `connect()` before performing any other methods.
 
-## Connection.connect(dbname)
+**Parameters**:
+- **db**: `Object` includes the properties `url` location of the database, use '*LOCAL' for a local database, `username` for the database user, `password` for the databse user. If connecting using '*LOCAL' it is not required to pass the `username` & `password` but ensure that the the object contains `url: '*LOCAL'`.
+
+## Connection.connect(url, username, password)
 
 Establishes a Connection to the database.
 
-**Parameters**
+**Parameters**:
 
-**dbname**: `string`, the name of the database to connect to. If a name is not specified, the dbname is defaulted to "*LOCAL".
+- **url**: `String` the url of the database to connect to. If a url is not specified, it defaults to "*LOCAL".
 
-**Returns**: `object`, - the dbConn Object with an established connection.
+- **username**: `String` the username for the database user.
+
+- **password**: `String` the password for the database user.
+
+**Returns**: `Object` the Connection object with an established connection.
 
 ## Connection.getStatement()
 
-returns a Statement Object initialized to the current dbConn Connection.
+Returns a Statement Object initialized to the current Connection. Ensure that the Connection object is connected first before attempting to  get a Statement. The [isConnected](#markdown-header-connectionisconnected) method can be used to check if the Connection object is currently connected
 
-**Returns**: `object`, - a new Statement initialized with the current dbconn.
+**Returns**: `Object` a new Statement initialized with the current Connection.
 
 ## Connection.close()
 
-closes the Connection to the DB and frees the connection object.
+Closes the Connection to the DB and frees the connection object.
 
-**Returns**: `Promise`, - Promise object represents the closure of the Connection.
+**Returns**: `Promise` when resolved will return `true` indicating successful closure, or the promise will be rejected.
 
 ## Connection.disconn()
 
-disconnects an existing connection to the database.
+Disconnects an existing connection to the database.
 
-**Returns**: `Promise`, - Promise object represents the disconnect of the Connection.
+**Returns**: `Promise` when resolved will return `true` indicating successful disconnection, or the promise will be rejected.
 
 ## Connection.debug(choice)
 
-prints more detailed info if choice = true. Turned off by setting choice = false.
+Prints verbose detailed info to the console if choice is set `true`. Can be turned off by setting choice = false.
 
-**Parameters**
+**Parameters**:
 
-**choice**: `boolean`, the option either true or false to turn on debugging.
+- **choice**: `boolean` the option either true or false to turn debug on/off.
 
-**Returns**: `Promise`, - Promise object represents the debug method being set to the choice specified.
+**Returns**: `Promise` when resolved will return `true | false` indicating the current state of debug, or the promise will be rejected.
 
 ## Connection.getConnAttr(attribute)
 
-if connection attribute exists should return type String or Int depending on the attribute type
+If the `attribute` exists will return the current value of the attribute.
 
-**Parameters**
+**Parameters**:
 
-**attribute**: `number`, if connection attribute exists should return type String or Int depending on the attribute type
+- **attribute**: `Number` the attribute to retrieve the current value from.
 
-**Returns**: `Promise`, - Promise object represents the the current settings for the specified connection attribute.
+**Returns**: `Promise` when resolved  will return the specified connection attribute settings either `Number | String`, or the promise will be rejected.
 
 **Link**:
-[Further Documentation ON Connection Attributes](https://www.ibm.com/support/knowledgecenter/en/ssw\_ibm\_i_73/cli/rzadpfnsconx.htm)
+[Connection Attributes](https://www.ibm.com/support/knowledgecenter/en/ssw\_ibm\_i_73/cli/rzadpfnsconx.htm)
+
+## Connection.isConnected()
+
+Checks if the Connection object is currentl connected to the database.
+
+**Returns**: `true` or `false` indicating if the Connection object is currently connected.
+
 ## Connection.setConnAttr(attribute, value)
 
-Sets the ConnAttr , Attribute should be INT.
+Sets the the value for a given `attribute`.
 
-**Parameters**
+**Parameters**:
 
-**attribute**: `number`, the attribute to be set refer to the getConAttr example to view available attributes.
+- **attribute**: `Number` the attribute to be set.
 
-**value**: `string | number`, the value to set the attribute to. Can be String or Int depending the attribute.
+- **value**: `string | number` the value to set the attribute to.
 
-**Returns**: `Promise`, - Promise object represents the execution of the setConnAttr().
+**Returns**: `Promise` when resolved will return `true` indicating success or the promise will be rejected.
 
-### Connection.validStmt(sql)
+## Connection.validStmt(sql)
 
 Checks if the given SQL is valid and interprets vendor escape clauses.
 
-**Parameters**
+**Parameters**:
 
-**sql**: `string`, the sql string to be validated.
+- **sql**: `String`, the sql string to be validated.
 
-**Returns**: `Promise`, - Promise object represents the transformed SQL string that is seen by the data source.
+**Returns**: `Promise` when resolved will return the transformed sql string that is seen by the data source, or the promise will be rejected.
 
-- - -
+
 # Class: Statement
 
+## Constructor: Statement(connection)
+
+**Parameters**:
+
+- **connection**: optional `dbconn` Object for the connection to use. If you don't pass a `connection` one will be implicitly created and used for the statement.
 
 ## Statement.bindParam(params)
 
-associates parameter markers in an SQL statement to app variables.
+Associates parameter markers in an sql statement to application variables.
 
-**Parameters**
+**Parameters**:
 
-**params**: `Array`, this should be an Array of the parameter list. Each parameter element will also be an Array with 3 values ( Value, In/out Type ,Indicator ).
+- **params**: `Array` the parameter list in order corresponding to the parameter markers. Each parameter element will also be an Array with 3 values ( value, in/out type ,indicator ).
 
-**Returns**: `Promise`, - Promise object represents the execution of bindParam().
 
-**Example**:
-```js
-statement.bindParam([
-        [2099, dba.SQL_PARAM_INPUT, dba.SQL_BIND_NUMERIC],
-        ['Node.Js', dba.SQL_PARAM_INPUT,dba.SQL_BIND_CHAR]
-		]);
-		
-        IN/OUT TYPE CAN BE:
-            1.SQL_PARAM_INPUT   
-            2.SQL_PARAM_OUTPUT
-            3.SQL_PARAM_INPUT_OUTPUT
-        INDICATORS CAN BE: 
-            1. SQL_BIND_CLOB
-            2. SQL_BIND_CHAR
-            3. SQL_BIND_NUMERIC
-            4. SQL_BIND_NULL_DATA
 ```
+       IN/OUT TYPE CAN BE:
+          - SQL_PARAM_INPUT or PARAM_INPUT
+          - SQL_PARAM_OUTPUT or PARAM_OUTOUT
+          - SQL_PARAM_INPUT_OUTPUT or INPUT_OUTPUT
+          
+       INDICATORS CAN BE:
+           - SQL_BIND_CHAR or BIND_STRING
+           - SQL_BIND_INT or BIND_INT
+           - SQL_BIND_NUMERIC or BIND_NUMERIC
+           - SQL_BIND_BINARY or BIND_BINARY
+           - SQL_BIND_BLOB or BIND_BINARY
+           - SQL_BIND_CLOB or BIND_CLOB
+           - SQL_BIND_BOOLEAN or BIND_BOOLEAN
+           - SQL_BIND_NULL_DATA or BIND_NULL
+      
+```
+These values are constants which are attached to object returned when you `const idbp = require('idb-pconnector')`.
+
+You can access said values like so : `idbp.PARAM_INPUT`
+
+**Returns**: `Promise` when resolved there is no return value but if an error occurred the promise will be rejected.
+
+**Example**: [Here](#markdown-header-prepare-bind-execute)
 
 ## Statement.bind(params)
 
-Shorthand for bindParam
-
-**Parameters**
-
-**params**: `Array`, this should be an Array of the parameter list. Each parameter element will also be an Array with 3 values ( Value, In/Out Type ,Indicator ).
+Shorthand equivalent of bindParam(params) above.
 
 
 ## Statement.close()
 
 Ends and frees the statement object.
 
-**Returns**: `Promise`, - Promise object represents the execution of close().
+**Returns**: `Promise` when resolved will return true indicating successful closure, or the promise will be rejected.
 
 ## Statement.closeCursor()
 
-closes the cursor associated with the dbstmt object and discards any pending results.
+Closes the cursor associated with the Statement object and discards any pending results.
 
-**Returns**: `Promise`, - Promise object represents the execution of closeCursor().
+**Returns**: `Promise` when resolved will return true indicating successful closure, or the promise will be rejected.
 
 ## Statement.commit()
 
-adds all changes to the database that have been made on the connection since connect time.
+Adds all changes to the database that have been made on the connection since connect time.
 
-**Returns**: `Promise`, - Promise object represents the execution of Commit().
+**Returns**: `Promise` when resolved will return true indicating successful commit, or the promise will be rejected.
 
-## Statement.exec(sqlString)
+## Statement.exec(sql)
 
-performs action of given SQL String. The exec() method does not work with stored procedure calls use execute() instead.
+Directly executes a given sql String. The exec() method does not work with stored procedure use execute() method instead.
 
-**Parameters**
+**Parameters**:
 
-**sqlString**: `string`, performs action of given SQL String. The exec() method does not work with stored procedure calls use execute() instead.
+- **sql**: `String` the sql command to execute.
 
-**Returns**: , the result set as an array.
-**Returns**: `Promise`, - Promise object represents the result set from the execution of exec().
+**Returns**: `Promise` when resolved if available will return the result set as an `Array` , or the promise will be rejected.
+
+**Example**: [Here](#markdown-header-exec)
 
 ## Statement.execute()
 
-Runs a statement that was successfully prepared using prepare().
-Use execute() for stored procedure calls.
+Runs a statement that was successfully prepared using prepare(). Used to call stored procedure calls. Important to note that execute() will return output parameters and not a result set. If available you can retrieve the result set by either running fetch() or fetchAll().
 
-**Returns**: `Promise`, - Promise object represents the execution of execute().
+**Returns**: `Promise` when resolved if available will return output parameters as an `Array`, or the promise will be rejected.
 
-**Example**:
-```js
-- Calling a stored Procedure that returns a result set with execute() & displaying the result set.
-     	
- 	   try{
-     	 let db = require('idb-pconnector');
-
-     	 // note that that calling the new Statement() without the DbConn as a parameter
-     	 // creates a new connection implicitly and uses that for the Statement.
-     	 let statement = new db.Statement(),
-		   sql = 'CALL MYSCHEMA.SAMPLEPROC';
-		   
-     	 await statement.prepare(sql);
-     	 await statement.execute();
-     	 let result = await statement.fetchAll();
-     	 console.log(`Result is\n: ${JSON.stringify(result)}`);
-        }
-        catch(error){
-     	 console.log(error.stack);
-		}
-
-- Insert Example With Prepare , Binding Parameter , and Execution
- 	 
- 	  try {
-     	 let db = require('idb-pconnector');
-    
-     	 // note that that calling the new Statement() without the DbConn as a parameter
-     	 // creates a new connection implicitly and uses that for the Statement.
-		 let statement = new db.Statement();
-		  
-     	 await statement.prepare('INSERT INTO MYSCHEMA.MYTABLE VALUES (?,?)');
-     	 await statement.bind([ [2018,db.SQL_PARAM_INPUT,db.SQL_BIND_NUMERIC], [null ,db.PARM_TYPE_INPUT, dba.SQL_BIND_NULL_DATA ] ]);
-		 await dbStmt.execute();
-
-     	 let result = await dbStmt.exec('SELECT * FROM MYSCHEMA.MYTABLE');
-     	 console.log(`Select results: \nJSON.stringify(result)`);
-        }
-        catch (error) {
-     	 console.log(error.stack);
-        }
-```
+**Example**: [Here](#markdown-header-prepare-bind-execute)
 
 ## Statement.fetch()
 
-if a result exists , retrieves a row from the result set
+If a result set exists, fetch() will retrieve a row from the result set. The row is an `Object`. Fetch can be continuously run until there is no data. If there is no data to be fetched null will be returned indicating the end of the result set.
 
-**Returns**: `Promise | null`, - Promise object represents the row that was retrieved from the execution of fetch(). If there is no data to be fetched null will be returned indicating the end of the result set.
+**Returns**: `Promise` when resolved will return an `Object` representing the row that was retrieved. If there is no data remaining to be fetched in the result set `null` will be returned indicating the end of the result set. Or if there was never a result set to be fetched the promise will be rejected.
+
+**Example Fetching a result set until there is no more data to fetch**:
+
+```javascript
+const {Connection} = require('idb-pconnector');
+
+async function fetch(){
+  try {
+    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
+    connection = new Connection();
+
+    connection.debug(true);
+    let statement = connection.connect().getStatement();
+
+    await statement.prepare(sql);
+    await statement.execute();
+    let result = await statement.fetch();
+
+    while (result !== null ){
+      console.log(`Fetch result:\n ${JSON.stringify(result)}`);
+      result = await statement.fetch();
+    }
+  } catch(error){
+    	console.log(error.stack);
+      }
+}
+
+fetch();
+
+```
 
 ## Statement.fetchAll()
 
-if a result set exists , retrieves all the rows of data from the result set.
+If a result set exists , fetchAll() retrieves all the rows from the result set.
 
-**Returns**: `Promise`, - Promise object represents the the an array containing the result that was retrieved from the execution of fetchAll().
+**Returns**: `Promise` when resolved will return an `Array` of `Objects` representing the result set if its available, or the promise will be rejected.
 
 ## Statement.fieldName(index)
 
-requires an int index parameter. If a valid index is provided, returns the name of the indicated field.
+If a valid index is provided, returns the name of the indicated field.
 
-**Parameters**
+**Parameters**:
 
-**index**: `number`, the position of the field within the table. It is 0 based.
+- **index**: `Number` the position of the field within the table. It is 0 based.
 
-**Returns**: `Promise`, - Promise object represents the the String that was retrieved from the execution of fieldName().
+**Returns**: `Promise` when resolved will return `String` name of the field or the promise will be rejected.
 
 ## Statement.fieldNullable(index)
 
-requires an int index parameter. If a valid index is provided, returns t/f if the indicated field can be Null
+If a valid index is provided, returns `true | false` if the indicated field can be set to `null`.
 
-**Parameters**
+**Parameters**:
 
-**index**: `number`, the position of the field within the table. It is 0 based.
+- **index**: `Number` the position of the field within the table. It is 0 based.
 
-**Returns**: `Promise`, - Promise object represents the the boolean that was retrieved from the execution of fieldNullable().
+**Returns**: `Promise` when resolved will return `true | false` or the promise will be rejected.
 
 ## Statement.fieldPrecise(index)
 
-requires an int index parameter. If a valid index is provided, returns the precision of the indicated field
+If a valid index is provided, returns the precision of the indicated field
 
-**Parameters**
+**Parameters**:
 
-**index**: `number`, the position of the field within the table. It is 0 based.
+- **index**: `Number` the position of the field within the table. It is 0 based.
 
-**Returns**: `Promise`, - Promise object represents the the Number that was retrieved from the execution of fieldPrecisie().
+**Returns**: `Promise` when resolved will return `Number` or the promise will be rejected.
 
 ## Statement.fieldScale(index)
 
-requires an int index parameter. If a valid index is provided, returns the scale of the indicated column
+If a valid index is provided, returns the scale of the indicated column.
 
-**Parameters**
+**Parameters**:
 
-**index**: `number`, the position of the field within the table. It is 0 based.
+- **index**: `Number` the position of the field within the table. It is 0 based.
 
-**Returns**: `Promise`, - Promise object represents the the Number that was retrieved from the execution of fieldScale().
+**Returns**: `Promise` when resolved will return a `Number` or the promise will be rejected.
 
 ## Statement.fieldType(index)
 
-requires an int index parameter. If a valid index is provided, returns the data type of the indicated field
+If a valid index is provided, returns the data type of the indicated field.
 
-**Parameters**
+**Parameters**:
 
-**index**: `number`, the position of the field within the table. It is 0 based.
+- **index**: `Number` the position of the field within the table. It is 0 based.
 
-**Returns**: `Promise`, - Promise object represents the the Number that was retrieved from the execution of fieldType().
+**Returns**: `Promise` when resolved will return a `Number` or the promise will be rejected.
 
 ## Statement.fieldWidth(index)
 
-requires an int index parameter. If a valid index is provided, returns the field width of the indicated field
+If a valid index is provided, returns the field width of the indicated field
 
-**Parameters**
+**Parameters**:
 
-**index**: `number`, the position of the field within the table. It is 0 based.
+- **index**: `Number` the position of the field within the table. It is 0 based.
 
-**Returns**: `Promise`, - Promise object represents the the Number that was retrieved from the execution of fieldWidth().
+**Returns**: `Promise`, when resolved will return a `Number` or the promise will be rejected.
 
 ## Statement.getStmtAttr(attribute)
 
 If a valid Statement attribute is provided , returns the current settings for the specified Statement attribute.
 Refer to the list below for valid Statement Attributes.
 
-**Parameters**
+**Parameters**:
 
-**attribute**: `number`, the statement attribute to get
+- **attribute**: `Number`the attribute to retrieve the current value from.
 
-**Returns**: `Promise`, Promise object represents the the String | Number that was retrieved from the execution of getStmtAttr().
+**Returns**: `Promise`, when resolved will return the specified connection attribute settings as a `Number | String`, or the promise will be rejected.
 
-**Link**:
-[Further Documentaion On Statement Attributes](https://www.ibm.com/support/knowledgecenter/en/ssw_ibm_i_73/cli/rzadpfnsstma.htm)
+**Link**: [Statement Attributes](https://www.ibm.com/support/knowledgecenter/en/ssw_ibm_i_73/cli/rzadpfnsstma.htm)
+
 ## Statement.nextResult()
 
-Determines whether there is more information available on the statement
+Determines whether there is more information available on the statement handle that has been associated with a stored procedure that is returning result sets.
 
-**Returns**: `Promise`, - Promise object represents the execution of nextResult().
+After completely processing the first result set, the application can call nextResult() to determine if another result set is available. If the current result set has unfetched rows, nextResult() discards them by closing the cursor.
+
+**Returns**: `Promise` when resolve `true` will be returned indicating there is another result set or `null` is returned indicating there was not another result set. If an error occurred while processing the promise is rejected.
 
 ## Statement.numFields()
 
-if a result is available , retrieves number of fields contained in result.
+If a result set is available , numFields() retrieves number of fields contained in the result set.
 
-**Returns**: `Promise`, - Promise object represents the Number returned from the execution of numFields().
+**Returns**: `Promise` when resolved `Number` is returned or the promise is rejected.
 
 ## Statement.numRows()
 
-if a query was performed ,retrieves number of rows that were affected by a query
+If a query was performed, retrieves the number of rows that were affected by a query.
 
-**Returns**: `Promise`, - Promise object represents the Number returned from the execution of numRows().
+**Returns**: `Promise` when resolved will return a `Number` or the promise is rejected.
 
-## Statement.prepare(sqlString)
+## Statement.prepare(sql)
 
-If valid SQL is provided . prepares SQL and sends it to the DBMS, if the input SQL Statement cannot be prepared error is thrown.
+If valid sql is provided . prepares the sql and sends it to the DBMS, if the input sql Statement cannot be prepared error is thrown.
 
-**Parameters**
+**Parameters**:
 
-**sqlString**: `string`, the SQL string to be prepared.
+- **sql**: `String`, the SQL string to be prepared.
 
-**Returns**: `Promise`, - Promise object represents the the execution of prepare().
+**Returns**: `Promise` when resolved no value is returned but if an error occurred the promise is rejected.
 
-**Example**:
-```js
-- view the examples located at the execute() method.
-```
+**Example**: [Here](#markdown-header-prepare-bind-execute)
 
 ## Statement.rollback()
 
 Reverts changes to the database that have been made on the connection since connect time or the previous call to commit().
 
+**Returns**: `Promise` when resolved  `true` is returned or promise is rejected.
+
 
 ## Statement.setStmtAttr(attribute, value)
 
-if a valid attribute and value is provided , sets StmtAttr indicate Attribute. Refer to the example @getStmtAttr for a list of valid Statement Attributes.
+Sets the the value for a given attribute.
 
-**Parameters**
+**Parameters**:
 
-**attribute**: `number`, must be an int INT.
+- **attribute**: `Number` the attribute to be set.
 
-**value**: `string | number`, can String or Int depending on the attribute
+- **value**: `string | number` the value to set the attribute to.
 
-**Returns**: `Promise`, - Promise object represents the execution of setStmtAttr().
+- **Returns**: `Promise` when resolved will return `true` indicating success or the promise will be rejected..
 
 ## Statement.stmtError(hType, recno)
 
 Returns the diagnostic information associated with the most recently called function for a particular statement, connection, or environment handler.
 
-**Parameters**
+**Parameters**:
 
-**hType**: `number`, indicates the handler type of diagnostic information.
+- **hType**: `Number`, indicates the handler type of diagnostic information.
 
-**recno**: `number`, indicates which error should be retrieved. The first error record is number 1.
+- **recno**: `Number`, indicates which error should be retrieved. The first error record is number 1.
 
-**Returns**: `Promise`, - Promise object represents Number retrieved from the execution of stmtError().
-
-**Example**:
-```js
+```
 hType can be following values:
-	  SQL_HANDLE_ENV:  Retrieve the environment diagnostic information
- 	  SQL_HANDLE_DBC:  Retrieve the connection diagnostic information
-      SQL_HANDLE_STMT: Retrieve the statement diagnostic information
+ 	 SQL_HANDLE_ENV:  Retrieve the environment diagnostic information
+	 SQL_HANDLE_DBC:  Retrieve the connection diagnostic information
+     SQL_HANDLE_STMT: Retrieve the statement diagnostic information
 ```
 
-* * *
-
-
-
-
-
-
-
-
-
-
+**Returns**: `Promise` when resolved returns `String` or the promise is rejected.

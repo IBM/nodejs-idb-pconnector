@@ -7,13 +7,14 @@
 const assert = require('chai').assert;
 const expect = require('chai').expect;
 const idbp = require('../lib/idb-pconnector');
+const {Connection} = idbp;
 const util = require('util');
 
 //Test Statement Class
 
 describe('prepare', () => {
   it('Prepares valid SQL and sends it to the DBMS, if the input SQL Statement cannot be prepared error is returned. ', async () =>{
-    dbConn = new idbp.Connection();
+    dbConn = new Connection();
     dbConn.debug(true);
     let dbStmt = dbConn.connect().getStatement(),
       sql = 'SELECT * FROM QIWS.QCUSTCDT';
@@ -28,8 +29,8 @@ describe('bindParams', () => {
   it('associate parameter markers in an SQL statement to app variables', async () => {
 
     let sql = 'INSERT INTO QIWS.QCUSTCDT(CUSNUM,LSTNAM,INIT,STREET,CITY,STATE,ZIPCOD,CDTLMT,CHGCOD,BALDUE,CDTDUE) VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE',
-      dbStmt = new idbp.Connection().connect().getStatement(),
-      dbStmt2 = new idbp.Connection().connect().getStatement();
+      dbStmt = new Connection().connect().getStatement(),
+      dbStmt2 = new Connection().connect().getStatement();
 
     let params = [
       [9997, idbp.SQL_PARAM_INPUT, idbp.SQL_NUMERIC], //CUSNUM
@@ -71,7 +72,7 @@ describe('close', () => {
   it('frees the statement object. ', async () => {
 
     let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new idbp.Connection().connect().getStatement();
+      dbStmt = new Connection().connect().getStatement();
 
     await dbStmt.exec(sql);
     let result = await dbStmt.close();
@@ -84,7 +85,7 @@ describe('closeCursor', () => {
   it('closes any cursor associated with the dbstmt object and discards any pending results. ', async () => {
 
     let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new idbp.Connection().connect().getStatement();
+      dbStmt = new Connection().connect().getStatement();
 
     await dbStmt.exec(sql);
     let result = await dbStmt.closeCursor();
@@ -97,7 +98,7 @@ describe('commit', () => {
   it('adds all changes to the database that have been made on the connection since connect time ', async () => {
 
     let sql = 'INSERT INTO QIWS.QCUSTCDT(CUSNUM,LSTNAM,INIT,STREET,CITY,STATE,ZIPCOD,CDTLMT,CHGCOD,BALDUE,CDTDUE) VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE ',
-      dbStmt = new idbp.Connection().connect().getStatement();
+      dbStmt = new Connection().connect().getStatement();
 
     let params = [
       [9997, idbp.SQL_PARAM_INPUT, idbp.SQL_NUMERIC], //CUSNUM
@@ -123,7 +124,7 @@ describe('commit', () => {
 //if successful returns an array. of Type of objects
 describe('exec', () => {
   it('performs action of given SQL String', async () => {
-    let dbConn = new idbp.Connection();
+    let dbConn = new Connection();
     dbConn.debug(true);
     let dbStmt = dbConn.connect().getStatement(),
       sql = 'SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = 938472';
@@ -141,7 +142,7 @@ describe('execute', () => {
   it('retrieves results from execute function:', async () =>{
     let user = (process.env.USER).toUpperCase(),
       sql = `CALL ${user}.MAXBAL(?)`,
-      dbConn = new idbp.Connection();
+      dbConn = new Connection();
 
     dbConn.debug(true);
     let dbStmt = dbConn.connect().getStatement(),
@@ -161,7 +162,7 @@ describe('execute', () => {
 describe('fetchAll', () => {
   it('Fetches All rows from execute function:', async () => {
     let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbConn = new idbp.Connection();
+      dbConn = new Connection();
 
     dbConn.debug(true);
     let dbStmt = dbConn.connect().getStatement();
@@ -182,7 +183,7 @@ describe('fetchAll', () => {
 describe('fetch', () => {
   it('Fetches one row from execute function:', async () => {
     let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbConn = new idbp.Connection();
+      dbConn = new Connection();
     dbConn.debug(true);
     let dbStmt = dbConn.connect().getStatement();
 
@@ -199,7 +200,7 @@ describe('fetch', () => {
 describe('numFields', () => {
   it('retrieves number of fields contained in result', async () => {
     let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new idbp.Connection().connect().getStatement();
+      dbStmt = new Connection().connect().getStatement();
 
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -214,7 +215,7 @@ describe('numFields', () => {
 describe('numRows', () => {
   it('retrieves number of rows that were effected by a Querry', async () => {
     let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new idbp.Connection().connect().getStatement();
+      dbStmt = new Connection().connect().getStatement();
 
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -229,7 +230,7 @@ describe('numRows', () => {
 describe('fieldType', () => {
   it('requires an int index parameter. If a valid index is provided, returns the data type of the indicated column', async () => {
     let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new idbp.Connection().connect().getStatement();
+      dbStmt = new Connection().connect().getStatement();
 
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -248,7 +249,7 @@ describe('fieldType', () => {
 describe('fieldWidth', () => {
   it('requires an int index parameter. If a valid index is provided, returns the field width of the indicated column', async () => {
     let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new idbp.Connection().connect().getStatement();
+      dbStmt = new Connection().connect().getStatement();
 
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -267,7 +268,7 @@ describe('fieldWidth', () => {
 describe('fieldNullable', () => {
   it('requires an int index parameter. If a valid index is provided, returns t/f if the indicated column can be Null', async () => {
     let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new idbp.Connection().connect().getStatement();
+      dbStmt = new Connection().connect().getStatement();
 
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -286,7 +287,7 @@ describe('fieldNullable', () => {
 describe('fieldName', () => {
   it('requires an int index parameter. If a valid index is provided,returns name of the indicated column ', async () => {
     let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new idbp.Connection().connect().getStatement();
+      dbStmt = new Connection().connect().getStatement();
 
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -305,7 +306,7 @@ describe('fieldName', () => {
 describe('fieldPrecise', () => {
   it('requires an int index parameter. If a valid index is provided, returns the precision of the indicated column', async () => {
     let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new idbp.Connection().connect().getStatement();
+      dbStmt = new Connection().connect().getStatement();
 
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -325,7 +326,7 @@ describe('fieldPrecise', () => {
 describe('fieldScale', () => {
   it('requires an int index parameter. If a valid index is provided, returns the scale of the indicated column', async function(){
     let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new idbp.Connection().connect().getStatement();
+      dbStmt = new Connection().connect().getStatement();
 
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -345,7 +346,7 @@ describe('setStmtAttr', () => {
   it('sets StmtAttr Attrubte should be INT. Value can String or Int depending on the attribute', async () => {
     let attr = idbp.SQL_ATTR_FOR_FETCH_ONLY,
       value = 1,
-      dbStmt = new idbp.Connection().connect().getStatement();
+      dbStmt = new Connection().connect().getStatement();
 
     let result = await dbStmt.setStmtAttr(attr, value);
     expect(result).to.be.true;
@@ -356,7 +357,7 @@ describe('setStmtAttr', () => {
 describe('getStmtAttr', () => {
   it('if statement attribute exsits should return type String or Int depending on the attribute type', async () => {
     let attr = idbp.SQL_ATTR_FOR_FETCH_ONLY,
-      dbStmt = new idbp.Connection().connect().getStatement();
+      dbStmt = new Connection().connect().getStatement();
 
     let result = await dbStmt.getStmtAttr(attr);
     console.log(`Stmt Attr: ${result}`);
@@ -370,7 +371,7 @@ describe('getStmtAttr', () => {
 // describe('nextResult', () => {
 // 	it('Determines whether there is more information available on the statement', async () => {
 // 		let sql = "SELECT * FROM QIWS.QCUSTCDT";
-// 		let dbStmt = new idbp.Connection().connect().getStatement();
+// 		let dbStmt = new Connection().connect().getStatement();
 // 		await dbStmt.prepare(sql);
 // 		await dbStmt.execute();
 // 		let result = await dbStmt.nextResult();
@@ -382,7 +383,7 @@ describe('getStmtAttr', () => {
 describe('rollback', () => {
   it('Rollback all changes to the database that have been made on the connection', async () => {
     let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new idbp.Connection().connect().getStatement();
+      dbStmt = new Connection().connect().getStatement();
 
     await dbStmt.prepare(sql);
     await dbStmt.execute();
@@ -396,7 +397,7 @@ describe('rollback', () => {
 // describe('stmtError' , () => {
 
 // 	it('Returns the diagnostic information ', async () =>{
-// 			let dbStmt =  new idbp.Connection().connect().getStatement();
+// 			let dbStmt =  new Connection().connect().getStatement();
 // 			await dbStmt.stmtError(hType, recno);
 
 // 	});
