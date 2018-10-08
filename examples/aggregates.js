@@ -14,11 +14,11 @@ async function prepareExecuteExample(){
 
     if (data !== null){
       let {resultSet} = data;
-      console.log(`\n\n${JSON.stringify(resultSet)}\n\n`);
+      console.error(`\n\n${JSON.stringify(resultSet)}\n\n`);
     }
 
   } catch (error){
-    console.log(`Error was: ${error.stack}`);
+    console.error(`Error was: ${error.stack}`);
   }
 }
 

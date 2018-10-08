@@ -111,24 +111,24 @@ Associates parameter markers in an sql statement to application variables.
 
 ```
        IN/OUT TYPE CAN BE:
-          - SQL_PARAM_INPUT or PARAM_INPUT
-          - SQL_PARAM_OUTPUT or PARAM_OUTOUT
-          - SQL_PARAM_INPUT_OUTPUT or INPUT_OUTPUT
-          
-       INDICATORS CAN BE:
-           - SQL_BIND_CHAR or BIND_STRING
-           - SQL_BIND_INT or BIND_INT
-           - SQL_BIND_NUMERIC or BIND_NUMERIC
-           - SQL_BIND_BINARY or BIND_BINARY
-           - SQL_BIND_BLOB or BIND_BINARY
-           - SQL_BIND_CLOB or BIND_CLOB
-           - SQL_BIND_BOOLEAN or BIND_BOOLEAN
-           - SQL_BIND_NULL_DATA or BIND_NULL
-      
+          - IN
+          - OUT
+          - INOUT
+
+       INDICATOR CAN BE:
+           - CHAR
+           - INT
+           - NUMERIC
+           - BINARY
+           - BLOB
+           - CLOB
+           - BOOLEAN
+           - NULL
+
 ```
 These values are constants which are attached to object returned when you `const idbp = require('idb-pconnector')`.
 
-You can access said values like so : `idbp.PARAM_INPUT`
+You can access the constants like so : `idbp.IN`
 
 **Returns**: `Promise` when resolved there is no return value but if an error occurred the promise will be rejected.
 
