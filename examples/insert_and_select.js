@@ -1,4 +1,5 @@
-const {Connection} = require('idb-pconnector');
+const idbp = require('idb-pconnector');
+const {Connection} = idbp;
 
 async function execExample() {
   try {
@@ -13,6 +14,8 @@ async function execExample() {
   }
 }
 
+execExample();
+
 async function pbeExample() {
   try {
     let statement =  new Connection().connect().getStatement();
@@ -20,8 +23,8 @@ async function pbeExample() {
     await statement.prepare('INSERT INTO MYSCHEMA.TABLE VALUES (?,?)');
 
     await statement.bind([
-      [2018, idbp.PARAM_INPUT, idbp.BIND_INT],
-      ['example', idbp.PARAM_INPUT, idbp.BIND_STRING]
+      [2018, idbp.IN, idbp.INT],
+      ['example', idbp.IN, idbp.CHAR]
     ]);
     await statement.execute();
 
