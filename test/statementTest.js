@@ -20,7 +20,6 @@ describe('prepare', () => {
       sql = 'SELECT * FROM QIWS.QCUSTCDT';
 
     let result = await dbStmt.prepare(sql);
-    console.log(`Result is: ${result}`);
     expect(result).to.be.a('undefined');
   });
 });
@@ -33,23 +32,22 @@ describe('bindParams', () => {
       dbStmt2 = new Connection().connect().getStatement();
 
     let params = [
-      [9997, idbp.SQL_PARAM_INPUT, idbp.SQL_NUMERIC], //CUSNUM
-      ['Doe', idbp.SQL_PARAM_INPUT, idbp.SQL_CHAR], //LASTNAME
-      ['J D', idbp.SQL_PARAM_INPUT, idbp.SQL_CHAR], //INITIAL
-      ['123 Broadway', idbp.SQL_PARAM_INPUT, idbp.SQL_CHAR], //ADDRESS
-      ['Hope', idbp.SQL_PARAM_INPUT, idbp.SQL_CHAR], //CITY
-      ['WA', idbp.SQL_PARAM_INPUT, idbp.SQL_CHAR], //STATE
-      [98101, idbp.SQL_PARAM_INPUT, idbp.SQL_NUMERIC], //ZIP
-      [2000, idbp.SQL_PARAM_INPUT, idbp.SQL_NUMERIC], //CREDIT LIMIT
-      [1, idbp.SQL_PARAM_INPUT, idbp.SQL_NUMERIC], // change
-      [250.99, idbp.SQL_PARAM_INPUT, 4], //BAL DUE
-      [0.78, idbp.SQL_PARAM_INPUT, 4] //CREDIT DUE
+      [9997, idbp.IN, idbp.NUMERIC], //CUSNUM
+      ['Doe', idbp.IN, idbp.CHAR], //LASTNAME
+      ['J D', idbp.IN, idbp.CHAR], //INITIAL
+      ['123 Broadway', idbp.IN, idbp.CHAR], //ADDRESS
+      ['Hope', idbp.IN, idbp.CHAR], //CITY
+      ['WA', idbp.IN, idbp.CHAR], //STATE
+      [98101, idbp.IN, idbp.NUMERIC], //ZIP
+      [2000, idbp.IN, idbp.NUMERIC], //CREDIT LIMIT
+      [1, idbp.IN, idbp.NUMERIC], // change
+      [250.99, idbp.IN, idbp.NUMERIC], //BAL DUE
+      [0.78, idbp.IN, idbp.NUMERIC] //CREDIT DUE
     ];
 
     let countResult = await dbStmt2.exec('SELECT COUNT(CUSNUM) AS COUNT FROM QIWS.QCUSTCDT'),
       rowsBeforeCount = Number.parseInt(countResult[0].COUNT);
     console.log(`Count Before is: ${rowsBeforeCount}`);
-    console.log(`input: ${idbp.SQL_PARAM_INPUT}`);
     await dbStmt.prepare(sql);
     await dbStmt.bindParam(params);
     await dbStmt.execute();
@@ -61,12 +59,6 @@ describe('bindParams', () => {
     expect(rowsBeforeCount2).to.equal(rowsBeforeCount + 1);
   });
 });
-
-//would be the exact same test as BindParam
-// describe('bind', () => {
-//   it('shorthand for the bindParams()', async () => {
-//   });
-// });
 
 describe('close', () => {
   it('frees the statement object. ', async () => {
@@ -101,17 +93,17 @@ describe('commit', () => {
       dbStmt = new Connection().connect().getStatement();
 
     let params = [
-      [9997, idbp.SQL_PARAM_INPUT, idbp.SQL_NUMERIC], //CUSNUM
-      ['Johnson', idbp.SQL_PARAM_INPUT, idbp.SQL_CHAR], //LASTNAME
-      ['A J', idbp.SQL_PARAM_INPUT, idbp.SQL_CHAR], //INITIAL
-      ['453 Example', idbp.SQL_PARAM_INPUT, idbp.SQL_CHAR], //ADDRESS
-      ['Fort', idbp.SQL_PARAM_INPUT, idbp.SQL_CHAR], //CITY
-      ['TN', idbp.SQL_PARAM_INPUT, idbp.SQL_CHAR], //STATE
-      [37211, idbp.SQL_PARAM_INPUT, idbp.SQL_NUMERIC], //ZIP
-      [1000, idbp.SQL_PARAM_INPUT, idbp.SQL_NUMERIC], //CREDIT LIMIT
-      [1, idbp.SQL_PARAM_INPUT, idbp.SQL_NUMERIC], // change
-      [150, idbp.SQL_PARAM_INPUT, idbp.SQL_NUMERIC], //BAL DUE
-      [0.00, idbp.SQL_PARAM_INPUT, idbp.SQL_NUMERIC] //CREDIT DUE
+      [9997, idbp.IN, idbp.NUMERIC], //CUSNUM
+      ['Johnson', idbp.IN, idbp.CHAR], //LASTNAME
+      ['A J', idbp.IN, idbp.CHAR], //INITIAL
+      ['453 Example', idbp.IN, idbp.CHAR], //ADDRESS
+      ['Fort', idbp.IN, idbp.CHAR], //CITY
+      ['TN', idbp.IN, idbp.CHAR], //STATE
+      [37211, idbp.IN, idbp.NUMERIC], //ZIP
+      [1000, idbp.IN, idbp.NUMERIC], //CREDIT LIMIT
+      [1, idbp.IN, idbp.NUMERIC], // change
+      [150, idbp.IN, idbp.NUMERIC], //BAL DUE
+      [0.00, idbp.IN, idbp.NUMERIC] //CREDIT DUE
     ];
     await dbStmt.prepare(sql);
     await dbStmt.bindParam(params);
@@ -148,11 +140,10 @@ describe('execute', () => {
     let dbStmt = dbConn.connect().getStatement(),
       bal = 0;
     await dbStmt.prepare(sql);
-    await dbStmt.bind([[bal, idbp.SQL_PARAM_OUT, idbp.SQL_NUMERIC]]);
+    await dbStmt.bind([[bal, idbp.OUT, idbp.NUMERIC]]);
     let result = await dbStmt.execute();
 
     console.log(`ExecuteAsync results:\n ${JSON.stringify(result)}`);
-    console.log(`Length of results: ${result.length}`);
     expect(result).to.be.a('array');
     expect(result.length).to.be.greaterThan(0);
   });
@@ -172,7 +163,6 @@ describe('fetchAll', () => {
     let result = await dbStmt.fetchAll();
 
     console.log(`Fetch All results:\n ${JSON.stringify(result)}`);
-    console.log(`Size of the returned array: ${result.length}`);
     expect(result).to.be.a('array');
     expect(result.length).to.be.greaterThan(0);
   });
