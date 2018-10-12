@@ -116,19 +116,50 @@ describe('runSql', async () => {
     expect(results.length).to.be.gt(0);
   });
 });
+describe('runSql', async () => {
+  it('should execute sql and return result set as an array if available , or return null', async () => {
+    let sql = `INSERT INTO QIWS.QCUSTCDT VALUES (6754,'Smith','A S','323 Main','Test','CA',52501,3500,2,500.99,0.98) with NONE`,
+      results = await connPool.runSql(sql);
+
+    expect(results).to.be.null;
+  });
+});
 describe('prepare, bind, execute', async () => {
   it('should prepare bind and execute , return output params if available or result set if available',
     async () => {
       let cusNum = 938472,
-        results = await connPool.prepareExecute('SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = ?', [cusNum]);
+        results = await connPool.prepareExecute('SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = ?', [cusNum]),
+        {resultSet} = results;
 
       console.log(results);
       expect(results).to.be.an('object');
-      expect(results.resultSet).to.be.an('array');
-      expect(results.resultSet.length).to.be.gt(0);
+      expect(resultSet).to.be.an('array');
+      expect(resultSet.length).to.be.gt(0);
     });
 });
+describe('prepare, bind, execute', async () => {
+  it('should prepare bind and execute , return output params if available or result set if available',
+    async () => {
+      let sql = 'INSERT INTO QIWS.QCUSTCDT VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE',
+        params = [
+          5469, //CUSNUM
+          'David', //LASTNAME
+          'E D', //INITIAL
+          '456 enter', //ADDRESS
+          'Hill', //CITY
+          'SC', //STATE
+          54786, //ZIP
+          7000, //CREDIT LIMIT
+          2, // change
+          478.32, //BAL DUE
+          0.25 //CREDIT DUE
+        ];
 
+      let results = await connPool.prepareExecute(sql, params, {io: 'in'});
+
+      expect(results).to.be.null;
+    });
+});
 describe('Set Connection Attribute for Pool', async () => {
   it('should set a valid connection attribute for the pool.',
     async () => {
