@@ -7,10 +7,34 @@
 const assert = require('chai').assert;
 const expect = require('chai').expect;
 const idbp = require('../lib/idb-pconnector');
-const {Connection} = idbp;
+const {Connection, Statement} = idbp;
 const util = require('util');
 
 //Test Statement Class
+
+describe('statement constructor with connection parameter', () =>{
+  it('creates a new Statement object by passing a connection object', async () =>{
+    let connection = new Connection().connect(),
+      statement = new Statement(connection),
+      sql = 'SELECT * FROM QIWS.QCUSTCDT';
+
+    let result = await statement.exec(sql);
+
+    expect(result).to.be.a('array');
+    expect(result.length).to.be.gt(0);
+  });
+});
+describe('statement constructor without connection parameter', () =>{
+  it('creates a new Statement object connected to *LOCAL by default', async () =>{
+    let statement = new Statement(),
+      sql = 'SELECT * FROM QIWS.QCUSTCDT';
+
+    let result = await statement.exec(sql);
+
+    expect(result).to.be.a('array');
+    expect(result.length).to.be.gt(0);
+  });
+});
 
 describe('prepare', () => {
   it('Prepares valid SQL and sends it to the DBMS, if the input SQL Statement cannot be prepared error is returned. ', async () =>{
