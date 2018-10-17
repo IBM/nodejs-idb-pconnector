@@ -125,20 +125,22 @@ describe('runSql', async () => {
   });
 });
 describe('prepare, bind, execute', async () => {
-  it('should prepare bind and execute , return output params if available or result set if available',
+  it('should prepare bind and execute , return output params & result',
     async () => {
       let cusNum = 938472,
         results = await connPool.prepareExecute('SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = ?', [cusNum]),
-        {resultSet} = results;
+        {resultSet, outputParams} = results;
 
       console.log(results);
       expect(results).to.be.an('object');
       expect(resultSet).to.be.an('array');
       expect(resultSet.length).to.be.gt(0);
+      expect(outputParams).to.be.an('array');
+      expect(outputParams.length).to.equal(1);
     });
 });
 describe('prepare, bind, execute', async () => {
-  it('should prepare bind and execute , return output params if available or result set if available',
+  it('should prepare bind and execute , return null ',
     async () => {
       let sql = 'INSERT INTO QIWS.QCUSTCDT VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE',
         params = [
@@ -158,6 +160,18 @@ describe('prepare, bind, execute', async () => {
       let results = await connPool.prepareExecute(sql, params, {io: 'in'});
 
       expect(results).to.be.null;
+    });
+});
+describe('prepare, bind, execute', async () => {
+  it('should prepare and execute , retrun result set & not output parameters',
+    async () => {
+      let sql = 'SELECT * FROM QIWS.QCUSTCDT';
+
+      let results = await connPool.prepareExecute(sql);
+
+      expect(results.outputParams).to.be.undefined;
+      expect(results.resultSet).to.be.a('array');
+      expect(results.resultSet.length).to.be.gt(0);
     });
 });
 describe('Set Connection Attribute for Pool', async () => {
