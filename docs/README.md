@@ -182,7 +182,11 @@ Directly executes a given sql String. The exec() method does not work with store
 
 - **sql**: `String` the sql command to execute.
 
-**Returns**: `Promise` when resolved if available will return the result set as an `Array` , or the promise will be rejected.
+**Returns**: 
+
+- `Promise` when resolved if available will return the result set as an `Array`.  
+- If no result set was available the `Promise` will resolve to `null`  
+- If the `sql` statement could not be directly executed the `Promise` will be rejected.
 
 **Example**: [Here](https://bitbucket.org/litmis/nodejs-idb-pconnector#markdown-header-exec)
 
@@ -190,7 +194,11 @@ Directly executes a given sql String. The exec() method does not work with store
 
 Runs a statement that was successfully prepared using prepare(). Used to call stored procedure calls. 
 
-**Returns**: `Promise` when resolved if available will return output parameters as an `Array`, or the promise will be rejected.
+**Returns**: `
+
+- Promise` when resolved if available will return output parameters as an `Array`.  
+- If no output parameters were available the `Promise` will resolve to `null`.  
+- If the prepared statement could not be executed the `Promise` will be rejected.
 
 **Example**: [Here](https://bitbucket.org/litmis/nodejs-idb-pconnector#markdown-header-prepare-bind-execute)
 
