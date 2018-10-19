@@ -119,7 +119,9 @@ poolExample();
 ### prepareExecute
 
 Example Using DBPool prepareExecute(sql,params,options) method to Prepare and Execute a statement.
+
 If you want to bind variables pass an array of values as the second parameter.
+
 
 ```javascript
 const {DBPool} = require('idb-pconnector');
@@ -152,7 +154,9 @@ prepareExecuteExample();
 ### runSql
 
 Example Using DBPool runSql(sql) method to directly run an sql statement.
-NOTE: This method will not work with stored procedures use prepareExecute() instead.
+
+***NOTE***: This method will not work with stored procedures use prepareExecute() instead.
+
 
 ```javascript
 const {DBPool} = require('idb-pconnector');
