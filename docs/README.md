@@ -1,5 +1,55 @@
 # **API Documentation**
-[TOC]
+<!-- TOC -->
+- [**API Documentation**](#api-documentation)
+- [**Class: Connection**](#class-connection)
+  - [**Constructor: Connection(database)**](#constructor-connectiondatabase)
+  - [**Connection.connect(url, username, password)**](#connectionconnecturl-username-password)
+  - [**Connection.getStatement()**](#connectiongetstatement)
+  - [**Connection.close()**](#connectionclose)
+  - [**Connection.disconn()**](#connectiondisconn)
+  - [**Connection.debug(choice)**](#connectiondebugchoice)
+  - [**Connection.getConnAttr(attribute)**](#connectiongetconnattrattribute)
+  - [**Connection.isConnected()**](#connectionisconnected)
+  - [**Connection.setConnAttr(attribute, value)**](#connectionsetconnattrattribute-value)
+  - [**Connection.validStmt(sql)**](#connectionvalidstmtsql)
+- [**Class: Statement**](#class-statement)
+  - [**Constructor: Statement(connection)**](#constructor-statementconnection)
+  - [**Statement.bindParam(params)**](#statementbindparamparams)
+  - [**Statement.bind(params)**](#statementbindparams)
+  - [**Statement.close()**](#statementclose)
+  - [**Statement.closeCursor()**](#statementclosecursor)
+  - [**Statement.commit()**](#statementcommit)
+  - [**Statement.exec(sql)**](#statementexecsql)
+  - [**Statement.execute()**](#statementexecute)
+  - [**Statement.fetch()**](#statementfetch)
+  - [**Statement.fetchAll()**](#statementfetchall)
+  - [**Statement.fieldName(index)**](#statementfieldnameindex)
+  - [**Statement.fieldNullable(index)**](#statementfieldnullableindex)
+  - [**Statement.fieldPrecise(index)**](#statementfieldpreciseindex)
+  - [**Statement.fieldScale(index)**](#statementfieldscaleindex)
+  - [**Statement.fieldType(index)**](#statementfieldtypeindex)
+  - [**Statement.fieldWidth(index)**](#statementfieldwidthindex)
+  - [**Statement.getStmtAttr(attribute)**](#statementgetstmtattrattribute)
+  - [**Statement.nextResult()**](#statementnextresult)
+  - [**Statement.numFields()**](#statementnumfields)
+  - [**Statement.numRows()**](#statementnumrows)
+  - [**Statement.prepare(sql)**](#statementpreparesql)
+  - [**Statement.rollback()**](#statementrollback)
+  - [**Statement.setStmtAttr(attribute, value)**](#statementsetstmtattrattribute-value)
+  - [**Statement.stmtError(hType, recno)**](#statementstmterrorhtype-recno)
+- [**Class: DBPool**](#class-dbpool)
+  - [**Constructor: DBPool(database , config)**](#constructor-dbpooldatabase--config)
+  - [**DBPool.createConnection(index)**](#dbpoolcreateconnectionindex)
+  - [**DBPool.detachAll()**](#dbpooldetachall)
+  - [**DBPool.retireAll()**](#dbpoolretireall)
+  - [**DBPool.detach(connection)**](#dbpooldetachconnection)
+  - [**DBPool.retire(connection)**](#dbpoolretireconnection)
+  - [**DBPool.attach()**](#dbpoolattach)
+  - [**DBPool.runSql(sql)**](#dbpoolrunsqlsql)
+  - [**DBPool.prepareExecute(sql, params, options)**](#dbpoolprepareexecutesql-params-options)
+  - [**DBPool.setConnectionAttribute(attribute)**](#dbpoolsetconnectionattributeattribute)
+  <!-- /TOC -->
+
 # **Class: Connection**
 
 ## **Constructor: Connection(database)**
@@ -37,7 +87,7 @@ Establishes a Connection to the database.
 
 Returns a Statement Object initialized to the current Connection. Ensure that the Connection object is connected first before attempting to  get a Statement. 
 
-The [isConnected](#markdown-header-connectionisconnected) method can be used to check if the Connection object is currently connected.
+The [isConnected](#connectionisconnected) method can be used to check if the Connection object is currently connected.
 
 **Returns**: `Object` a new Statement object initialized with the current Connection.
 
@@ -149,7 +199,7 @@ You can access the constants like so : `idbp.IN`
 
 **Returns**: `Promise` when resolved there is no return value but if an error occurred the promise will be rejected.
 
-**Example**: [Here](https://bitbucket.org/litmis/nodejs-idb-pconnector#markdown-header-prepare-bind-execute)
+**Example**: [Here](https://github.com/ibm/nodejs-idb-pconnector#prepare-bind-execute)
 
 ## **Statement.bind(params)**
 
@@ -188,7 +238,7 @@ Directly executes a given sql String. The exec() method does not work with store
 - If no result set was available the `Promise` will resolve to `null`  
 - If the `sql` statement could not be directly executed the `Promise` will be rejected.
 
-**Example**: [Here](https://bitbucket.org/litmis/nodejs-idb-pconnector#markdown-header-exec)
+**Example**: [Here](https://github.com/ibm/nodejs-idb-pconnector#exec)
 
 ## **Statement.execute()**
 
@@ -200,7 +250,7 @@ Runs a statement that was successfully prepared using prepare(). Used to call st
 - If no output parameters were available the `Promise` will resolve to `null`.  
 - If the prepared statement could not be executed the `Promise` will be rejected.
 
-**Example**: [Here](https://bitbucket.org/litmis/nodejs-idb-pconnector#markdown-header-prepare-bind-execute)
+**Example**: [Here](https://github.com/ibm/nodejs-idb-pconnector#prepare-bind-execute)
 
 ***NOTE***: that execute() will return output parameters and not a result set. 
 
@@ -363,7 +413,7 @@ If valid `sql` is provided , `prepare` prepares the `sql` statement and sends it
 
 **Returns**: `Promise` when resolved no value is returned but if an error occurred the promise is rejected.
 
-**Example**: [Here](https://bitbucket.org/litmis/nodejs-idb-pconnector#markdown-header-prepare-bind-execute)
+**Example**: [Here](https://github.com/ibm/nodejs-idb-pconnector#prepare-bind-execute)
 
 ## **Statement.rollback()**
 
@@ -423,7 +473,7 @@ Constructor to instantiate a new instance of a DBPool class given the `database`
     - `incrementSize`: `Number` is an integer that sets the desired size of the `DBPool`, defaults to 8 connections.
     - `debug`: `boolean` setting it to true will display verbose output to the console, defaults to false.
 
-**Example**: [Here](https://bitbucket.org/litmis/nodejs-idb-pconnector#markdown-header-dbpool)
+**Example**: [Here](https://github.com/ibm/nodejs-idb-pconnector#dbpool)
 
 
 ## **DBPool.createConnection(index)**
@@ -498,7 +548,7 @@ An aggregate to run an sql statement, just provide the `sql` to run.
 
 ***NOTE***: Caller should check if `null` is returned.
 
-**Example**: [Here](https://bitbucket.org/litmis/nodejs-idb-pconnector#markdown-header-runsql)
+**Example**: [Here](https://github.com/ibm/nodejs-idb-pconnector#runsql)
 
 
 ## **DBPool.prepareExecute(sql, params, options)**
@@ -542,7 +592,7 @@ If you want to bind a string as a clob you can add `asClob: true` property to th
 
 ***NOTE***: Caller should check if `null` is returned.
 
-**Example**: [Here](https://bitbucket.org/litmis/nodejs-idb-pconnector#markdown-header-prepareexecute)
+**Example**: [Here](https://github.com/ibm/nodejs-idb-pconnector#prepareexecute)
 
 ## **DBPool.setConnectionAttribute(attribute)**
 
