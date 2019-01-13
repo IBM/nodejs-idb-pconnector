@@ -186,10 +186,10 @@ runSqlExample();
 
 # **API Documentation**
 
-Please refer to the [documentation](https://bitbucket.org/litmis/nodejs-idb-pconnector/src/master/docs/README.md) for usage of the `idb-pconnector`.
+Please refer to the [documentation](https://github.com/IBM/nodejs-idb-pconnector/blob/master/docs/README.md) for usage of the `idb-pconnector`.
 
 # **License**
-MIT. View [LICENSE](https://bitbucket.org/litmis/nodejs-idb-pconnector/src/master/LICENSE)
+MIT. View [LICENSE](https://github.com/IBM/nodejs-idb-pconnector/blob/master/LICENSE)
 
 # **Contributing**
 If you would like to contribute please append your **name** and **email** to the `AUTHORS.md` file along with your PR.
