@@ -5,186 +5,215 @@
 * To see results of individual test cases you can run npm test -g name_of_test
 */
 
-const expect = require('chai').expect;
+/* eslint-env mocha */
+
+const { expect } = require('chai');
 const idbp = require('../lib/idb-pconnector');
-const {DBPool} = idbp;
-const connPool = new DBPool({url: '*LOCAL'}, {debug: true});
-const {DBPoolConnection} = require('../lib/dbPool.js');
-const log = console.log;
 
-describe('createConnetion', async () => {
-  it('should instantiate a new instance of DBConnection with an `index` and appends it to the pool',
-    async () => {
-      let lenBefore = connPool.connections.length;
+const { DBPool } = idbp;
+const DBPoolConnection = require('../lib/dbPoolConnection');
 
-      connPool.createConnection();
-      //verify the connection was added by checking the new length
-      expect(connPool.connections.length).to.be.equal(lenBefore +1);
-    });
-});
+describe('DBPool Class Tests', () => {
+  describe('createConnection', async () => {
+    it('creates a new instance of DBConnection with an index and appends it to the pool', async () => {
+      const pool = new DBPool({ url: '*LOCAL' });
 
-describe('attach', async () => {
-  it('should find a connection and return one', async () => {
-    let conn = await connPool.attach();
-    log(JSON.stringify(conn) );
+      const lenBefore = pool.connections.length;
 
-    //verify that the conn returned is of type DBPoolConnection
-    expect(conn).to.be.an.instanceOf(DBPoolConnection);
-
-    //verify that it is set to unavailable in the Pool
-    expect(conn.available).to.be.false;
-    connPool.detach(conn);
-  });
-});
-//could give assertion error (red herring?) , see detatch test in manualTest.js
-describe('detach', async () => {
-  it('should make the connection available again and clear stmts', async () => {
-    //get the conn
-    let conn =  await connPool.attach();
-    //perform some stmts
-    await conn.getStatement().exec('SELECT * FROM QIWS.QCUSTCDT');
-    console.log(`\n${JSON.stringify(conn)}`);
-
-    let stmtBefore = conn.statement,
-      id = conn.poolIndex;
-    await conn.detach();
-
-    let detached = connPool.connections[id],
-      stmtAfter = detached.statement;
-
-    //after being detached available should be true again
-    expect(detached.available).to.be.true;
-    //make sure the statement was cleared
-    expect(stmtBefore).to.not.equal(stmtAfter);
-    await connPool.detach(conn);
-
-  });
-});
-
-describe('detachAll', async () => {
-  it('should return all connections back to available', async () => {
-    //ensure all connections reset before attaching all
-    await connPool.detachAll();
-    //make all of the connections unavailable
-    for ( connection of connPool.connections){
-      //all of the conns should be unavailable
-      connPool.attach();
-    }
-    for ( connection of connPool.connections){
-      //all of the conns should be unavailable
-      expect(connection.available).to.be.false;
-    }
-    //now call detach all
-    await connPool.detachAll();
-
-    //make sure that are now available again.
-    for ( connection of connPool.connections){
-      //all of the conns should be unavailable
-      expect(connection.available).to.be.true;
-    }
-  });
-
-});
-describe('retire', async () => {
-  it('should remove a connection from the pool', async () => {
-    let conn = await connPool.attach(),
-      id = conn.poolIndex,
-      lenBefore = connPool.connections.length;
-
-    await connPool.retire(conn);
-    //verify that conn was removed
-    expect(connPool.connections.length).to.be.equal(lenBefore - 1);
-
-    connPool.connections.forEach(element => {
-      expect(element.poolIndex).to.not.equal(id);
+      pool.createConnection();
+      // verify the connection was added by checking the new length
+      expect(pool.connections.length).to.be.equal(lenBefore + 1);
     });
   });
-});
-describe('retireAll', async () => {
-  it('should remove all connection from the pool', async () => {
-    log('Length Before: '+ connPool.connections.length);
-    await connPool.retireAll();
 
-    log('Length After: '+ connPool.connections.length);
-    expect(connPool.connections.length).to.equal(0);
-  });
-});
-describe('runSql', async () => {
-  it('should execute sql and return result set as an array if available , or return null', async () => {
-    let results = await connPool.runSql('SELECT * FROM QIWS.QCUSTCDT');
-    expect(results).to.be.an('array');
-    expect(results.length).to.be.gt(0);
-  });
-});
-describe('runSql', async () => {
-  it('should execute sql and return result set as an array if available , or return null', async () => {
-    let sql = `INSERT INTO QIWS.QCUSTCDT VALUES (6754,'Smith','A S','323 Main','Test','CA',52501,3500,2,500.99,0.98) with NONE`,
-      results = await connPool.runSql(sql);
+  describe('attach', async () => {
+    it('finds an available connection and returns it', async () => {
+      const pool = new DBPool({ url: '*LOCAL' });
 
-    expect(results).to.be.null;
-  });
-});
-describe('prepare, bind, execute', async () => {
-  it('should prepare bind and execute , return output params & result',
-    async () => {
-      let cusNum = 938472,
-        results = await connPool.prepareExecute('SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = ?', [cusNum]),
-        {resultSet, outputParams} = results;
+      const conn = await pool.attach();
 
-      console.log(results);
-      expect(results).to.be.an('object');
-      expect(resultSet).to.be.an('array');
-      expect(resultSet.length).to.be.gt(0);
-      expect(outputParams).to.be.an('array');
-      expect(outputParams.length).to.equal(1);
+      // verify that the conn returned is of type DBPoolConnection
+      expect(conn).to.be.an.instanceOf(DBPoolConnection);
+
+      // verify that it is set to unavailable in the Pool
+      expect(conn.available).to.equal(false);
+    // pool.detach(conn);
     });
-});
-describe('prepare, bind, execute', async () => {
-  it('should prepare bind and execute , return null ',
-    async () => {
-      let sql = 'INSERT INTO QIWS.QCUSTCDT VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE',
-        params = [
-          5469, //CUSNUM
-          'David', //LASTNAME
-          'E D', //INITIAL
-          '456 enter', //ADDRESS
-          'Hill', //CITY
-          'SC', //STATE
-          54786, //ZIP
-          7000, //CREDIT LIMIT
+  });
+
+  // could give assertion error (red herring?) , see detach test in manualTest.js
+  describe('detach', async () => {
+    it('resets connection to be used again', async () => {
+      const pool = new DBPool({ url: '*LOCAL' });
+      // get the conn
+      const conn = pool.attach();
+      // perform some statements
+      await conn.getStatement().exec('SELECT * FROM QIWS.QCUSTCDT');
+
+      const stmtBefore = conn.statement;
+      const id = conn.poolIndex;
+      await conn.detach();
+
+      const detached = pool.connections[id];
+      const stmtAfter = detached.statement;
+
+      // after being detached available should be true again
+      expect(detached.available).to.equal(true);
+      // make sure the statement was cleared
+      expect(stmtBefore).to.not.equal(stmtAfter);
+      await pool.detach(conn);
+    });
+  });
+
+  describe('detachAll', async () => {
+    it('returns all connections back to available', async () => {
+      const pool = new DBPool({ url: '*LOCAL' });
+
+      const { connections } = pool;
+      // ensure all connections reset before attaching all
+      // await pool.detachAll();
+
+      // make all of the connections unavailable
+      connections.forEach(() => {
+      // make all of the connections unavailable
+        pool.attach();
+      });
+
+      connections.forEach((connection) => {
+      // all of the connections should be unavailable
+        expect(connection.available).to.equal(false);
+      });
+
+      // now call detach all
+      await pool.detachAll();
+
+      // make sure that are now available again.
+      connections.forEach((connection) => {
+      // all of the connections should be available
+        expect(connection.available).to.equal(true);
+      });
+    });
+  });
+
+  describe('retire', async () => {
+    it('removes a connection from the pool', async () => {
+      const pool = new DBPool({ url: '*LOCAL' });
+      const { connections } = pool;
+      const conn = pool.attach();
+      const id = conn.poolIndex;
+      const lenBefore = connections.length;
+
+      await pool.retire(conn);
+      // verify that conn was removed
+      expect(connections.length).to.be.equal(lenBefore - 1);
+
+      connections.forEach((connection) => {
+        expect(connection.poolIndex).to.not.equal(id);
+      });
+    });
+  });
+
+  describe('retireAll', async () => {
+    it('removes all connections from the pool', async () => {
+      const pool = new DBPool({ url: '*LOCAL' });
+
+      expect(pool.connections.length).to.equal(8);
+
+      await pool.retireAll();
+
+      expect(pool.connections.length).to.equal(0);
+    });
+  });
+
+  describe('runSql', async () => {
+    it('executes SELECT statment and returns result set', async () => {
+      const pool = new DBPool({ url: '*LOCAL' });
+
+      const results = await pool.runSql('SELECT * FROM QIWS.QCUSTCDT');
+      expect(results).to.be.an('array');
+      expect(results.length).to.be.gt(0);
+    });
+
+    it('executes INSERT statement and returns null', async () => {
+      const pool = new DBPool({ url: '*LOCAL' });
+
+      // eslint-disable-next-line quotes
+      const sql = `INSERT INTO QIWS.QCUSTCDT VALUES (6754,'Smith','A S','323 Main','Test','CA',52501,3500,2,500.99,0.98) with NONE`;
+      const results = await pool.runSql(sql);
+
+      expect(results).to.equal(null);
+    });
+  });
+
+  describe('prepareExecute', async () => {
+    it('prepares, binds, and executes statement, returns output params & result set',
+      async () => {
+        const pool = new DBPool({ url: '*LOCAL' });
+
+        const cusNum = 938472;
+        const results = await pool.prepareExecute('SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = ?', [cusNum]);
+        const { resultSet, outputParams } = results;
+
+        expect(results).to.be.an('object');
+        expect(resultSet).to.be.an('array');
+        expect(resultSet.length).to.be.gt(0);
+        expect(outputParams).to.be.an('array');
+        expect(outputParams.length).to.equal(1);
+      });
+
+    it('prepares, binds, and executes statement returns null (no output or result set)',
+      async () => {
+        const pool = new DBPool({ url: '*LOCAL' });
+
+        const sql = 'INSERT INTO QIWS.QCUSTCDT VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE';
+
+        const params = [
+          5469, // CUSNUM
+          'David', // LASTNAME
+          'E D', // INITIAL
+          '456 enter', // ADDRESS
+          'Hill', // CITY
+          'SC', // STATE
+          54786, // ZIP
+          7000, // CREDIT LIMIT
           2, // change
-          478.32, //BAL DUE
-          0.25 //CREDIT DUE
+          478.32, // BAL DUE
+          0.25, // CREDIT DUE
         ];
 
-      let results = await connPool.prepareExecute(sql, params, {io: 'in'});
+        const results = await pool.prepareExecute(sql, params, { io: 'in' });
 
-      expect(results).to.be.null;
-    });
+        expect(results).to.equal(null);
+      });
+
+    it('prepares and executes INSERT returns result set only',
+      async () => {
+        const pool = new DBPool({ url: '*LOCAL' });
+
+        const sql = 'SELECT * FROM QIWS.QCUSTCDT';
+
+        const results = await pool.prepareExecute(sql);
+
+        expect(results.outputParams).to.equal(undefined);
+        expect(results.resultSet).to.be.a('array');
+        expect(results.resultSet.length).to.be.gt(0);
+      });
+  });
+
+  describe('setConnectionAttribute', async () => {
+    it('sets connection attribute for all connections in the pool.',
+      async () => {
+        const db = { url: '*LOCAL' };
+
+        const attribute = { attribute: idbp.SQL_ATTR_DBC_SYS_NAMING, value: idbp.SQL_FALSE };
+
+        const config = { incrementSize: 3 };
+
+        const testPool = new DBPool(db, config);
+
+        await testPool.setConnectionAttribute(attribute).catch((error) => {
+          throw error;
+        });
+      });
+  });
 });
-describe('prepare, bind, execute', async () => {
-  it('should prepare and execute , retrun result set & not output parameters',
-    async () => {
-      let sql = 'SELECT * FROM QIWS.QCUSTCDT';
-
-      let results = await connPool.prepareExecute(sql);
-
-      expect(results.outputParams).to.be.undefined;
-      expect(results.resultSet).to.be.a('array');
-      expect(results.resultSet.length).to.be.gt(0);
-    });
-});
-describe('Set Connection Attribute for Pool', async () => {
-  it('should set a valid connection attribute for the pool.',
-    async () => {
-      let db = {url: '*LOCAL'},
-        attribute = {attribute: idbp.SQL_ATTR_DBC_SYS_NAMING, value: idbp.SQL_FALSE},
-        config = {incrementSize: 3, debug: true};
-
-      const testPool = new DBPool(db, config);
-
-      await testPool.setConnectionAttribute(attribute).catch(error =>{throw error;});
-
-    });
-});
-

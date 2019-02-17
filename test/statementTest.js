@@ -4,415 +4,444 @@
 * You may need to download those modules to run these tests on your machine
 * To see results of individual test cases you can run npm test -g name_of_test
 */
-const assert = require('chai').assert;
-const expect = require('chai').expect;
+/* eslint-env mocha */
+
+const { expect } = require('chai');
 const idbp = require('../lib/idb-pconnector');
-const {Connection, Statement} = idbp;
-const util = require('util');
+const DBPool = require('../lib/dbPool');
 
-//Test Statement Class
+const {
+  Connection, Statement, IN, OUT, NUMERIC, CHAR, SQL_ATTR_FOR_FETCH_ONLY,
+} = idbp;
 
-describe('statement constructor with connection parameter', () =>{
-  it('creates a new Statement object by passing a connection object', async () =>{
-    let connection = new Connection().connect(),
-      statement = new Statement(connection),
-      sql = 'SELECT * FROM QIWS.QCUSTCDT';
+const lib = 'IDBPTEST';
 
-    let result = await statement.exec(sql);
+describe('Statement Class Tests', () => {
+  describe('constructor with connection parameter', () => {
+    it('creates a new Statement object by passing a connection object', async () => {
+      const connection = new Connection().connect();
+      const statement = new Statement(connection);
 
-    expect(result).to.be.a('array');
-    expect(result.length).to.be.gt(0);
+      const results = await statement.exec('SELECT * FROM QIWS.QCUSTCDT');
+
+      expect(results).to.be.a('array');
+      expect(results.length).to.be.gt(0);
+
+      results.forEach((row) => {
+        expect(row).to.be.an('object');
+        expect(row).to.haveOwnProperty('CUSNUM');
+        expect(row).to.haveOwnProperty('LSTNAM');
+        expect(row).to.haveOwnProperty('INIT');
+        expect(row).to.haveOwnProperty('STREET');
+        expect(row).to.haveOwnProperty('CITY');
+        expect(row).to.haveOwnProperty('STATE');
+        expect(row).to.haveOwnProperty('ZIPCOD');
+        expect(row).to.haveOwnProperty('CDTLMT');
+        expect(row).to.haveOwnProperty('CDTLMT');
+        expect(row).to.haveOwnProperty('CHGCOD');
+        expect(row).to.haveOwnProperty('BALDUE');
+        expect(row).to.haveOwnProperty('CDTDUE');
+      });
+    });
   });
-});
-describe('statement constructor without connection parameter', () =>{
-  it('creates a new Statement object connected to *LOCAL by default', async () =>{
-    let statement = new Statement(),
-      sql = 'SELECT * FROM QIWS.QCUSTCDT';
 
-    let result = await statement.exec(sql);
+  describe('constructor without connection parameter', () => {
+    it('creates a new Statement object with implicit connection object connected to *LOCAL',
+      async () => {
+        const statement = new Statement();
 
-    expect(result).to.be.a('array');
-    expect(result.length).to.be.gt(0);
+        const results = await statement.exec('SELECT * FROM QIWS.QCUSTCDT');
+
+        expect(results).to.be.a('array');
+        expect(results.length).to.be.gt(0);
+
+        results.forEach((row) => {
+          expect(row).to.be.an('object');
+          expect(row).to.haveOwnProperty('CUSNUM');
+          expect(row).to.haveOwnProperty('LSTNAM');
+          expect(row).to.haveOwnProperty('INIT');
+          expect(row).to.haveOwnProperty('STREET');
+          expect(row).to.haveOwnProperty('CITY');
+          expect(row).to.haveOwnProperty('STATE');
+          expect(row).to.haveOwnProperty('ZIPCOD');
+          expect(row).to.haveOwnProperty('CDTLMT');
+          expect(row).to.haveOwnProperty('CDTLMT');
+          expect(row).to.haveOwnProperty('CHGCOD');
+          expect(row).to.haveOwnProperty('BALDUE');
+          expect(row).to.haveOwnProperty('CDTDUE');
+        });
+      });
   });
-});
 
-describe('prepare', () => {
-  it('Prepares valid SQL and sends it to the DBMS, if the input SQL Statement cannot be prepared error is returned. ', async () =>{
-    dbConn = new Connection();
-    dbConn.debug(true);
-    let dbStmt = dbConn.connect().getStatement(),
-      sql = 'SELECT * FROM QIWS.QCUSTCDT';
+  describe('prepare', () => {
+    it('prepares an sql statement', async () => {
+      const connection = new Connection();
+      const statement = connection.connect().getStatement();
 
-    let result = await dbStmt.prepare(sql);
-    expect(result).to.be.a('undefined');
+      const result = await statement.prepare('SELECT * FROM QIWS.QCUSTCDT');
+      expect(result).to.be.a('undefined');
+    });
   });
-});
 
-describe('bindParams', () => {
-  it('associate parameter markers in an SQL statement to app variables', async () => {
+  describe('bindParams', () => {
+    it('associate parameter markers in an SQL to app variables', async () => {
+      const sql = 'INSERT INTO QIWS.QCUSTCDT(CUSNUM,LSTNAM,INIT,STREET,CITY,STATE,ZIPCOD,CDTLMT,CHGCOD,BALDUE,CDTDUE) VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE';
 
-    let sql = 'INSERT INTO QIWS.QCUSTCDT(CUSNUM,LSTNAM,INIT,STREET,CITY,STATE,ZIPCOD,CDTLMT,CHGCOD,BALDUE,CDTDUE) VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE',
-      dbStmt = new Connection().connect().getStatement(),
-      dbStmt2 = new Connection().connect().getStatement();
+      const statement = new Statement();
+      const statement2 = new Statement();
 
-    let params = [
-      [9997, idbp.IN, idbp.NUMERIC], //CUSNUM
-      ['Doe', idbp.IN, idbp.CHAR], //LASTNAME
-      ['J D', idbp.IN, idbp.CHAR], //INITIAL
-      ['123 Broadway', idbp.IN, idbp.CHAR], //ADDRESS
-      ['Hope', idbp.IN, idbp.CHAR], //CITY
-      ['WA', idbp.IN, idbp.CHAR], //STATE
-      [98101, idbp.IN, idbp.NUMERIC], //ZIP
-      [2000, idbp.IN, idbp.NUMERIC], //CREDIT LIMIT
-      [1, idbp.IN, idbp.NUMERIC], // change
-      [250.99, idbp.IN, idbp.NUMERIC], //BAL DUE
-      [0.78, idbp.IN, idbp.NUMERIC] //CREDIT DUE
-    ];
+      const params = [
+        [9997, IN, NUMERIC], // CUSNUM
+        ['Doe', IN, CHAR], // LASTNAME
+        ['J D', IN, CHAR], // INITIAL
+        ['123 Broadway', IN, CHAR], // ADDRESS
+        ['Hope', IN, CHAR], // CITY
+        ['WA', IN, CHAR], // STATE
+        [98101, IN, NUMERIC], // ZIP
+        [2000, IN, NUMERIC], // CREDIT LIMIT
+        [1, IN, NUMERIC], // change
+        [250.99, IN, NUMERIC], // BAL DUE
+        [0.78, IN, NUMERIC], // CREDIT DUE
+      ];
 
-    let countResult = await dbStmt2.exec('SELECT COUNT(CUSNUM) AS COUNT FROM QIWS.QCUSTCDT'),
-      rowsBeforeCount = Number.parseInt(countResult[0].COUNT);
-    console.log(`Count Before is: ${rowsBeforeCount}`);
-    await dbStmt.prepare(sql);
-    await dbStmt.bindParam(params);
-    await dbStmt.execute();
+      const countResult = await statement2.exec('SELECT COUNT(CUSNUM) AS COUNT FROM QIWS.QCUSTCDT');
 
-    let countResult2 = await dbStmt.exec('SELECT COUNT(CUSNUM) AS COUNT FROM QIWS.QCUSTCDT'),
-      rowsBeforeCount2 = Number.parseInt(countResult2[0].COUNT);
+      const rowsBeforeCount = Number.parseInt(countResult[0].COUNT, 10);
+      await statement.prepare(sql);
+      await statement.bindParam(params);
+      await statement.execute();
 
-    console.log(`Count After is: ${rowsBeforeCount2}`);
-    expect(rowsBeforeCount2).to.equal(rowsBeforeCount + 1);
+      const countResultAgain = await statement.exec('SELECT COUNT(CUSNUM) AS COUNT FROM QIWS.QCUSTCDT');
+
+      const rowsAfterCount = Number.parseInt(countResultAgain[0].COUNT, 10);
+
+      expect(rowsAfterCount).to.equal(rowsBeforeCount + 1);
+    });
   });
-});
 
-describe('close', () => {
-  it('frees the statement object. ', async () => {
+  describe('close', () => {
+    it('frees the statement object. ', async () => {
+      const statement = new Statement();
 
-    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new Connection().connect().getStatement();
-
-    await dbStmt.exec(sql);
-    let result = await dbStmt.close();
-    expect(result).to.be.true;
+      await statement.exec('SELECT * FROM QIWS.QCUSTCDT');
+      const result = await statement.close();
+      expect(result).to.equal(true);
+    });
   });
-});
 
-//TODO: Ensure This a correct unit test for how closecursor may be used.
-describe('closeCursor', () => {
-  it('closes any cursor associated with the dbstmt object and discards any pending results. ', async () => {
+  // TODO: Ensure This a correct test for how closeCursor() may be used.
+  describe('closeCursor', () => {
+    it('discards any pending results', async () => {
+      const statement = new Statement();
 
-    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new Connection().connect().getStatement();
-
-    await dbStmt.exec(sql);
-    let result = await dbStmt.closeCursor();
-    expect(result).to.be.true;
+      await statement.exec('SELECT * FROM QIWS.QCUSTCDT');
+      const result = await statement.closeCursor();
+      expect(result).to.equal(true);
+    });
   });
-});
 
-//if successful returns undefined
-describe('commit', () => {
-  it('adds all changes to the database that have been made on the connection since connect time ', async () => {
+  describe('commit', () => {
+    it('adds changes to the database', async () => {
+      const sql = 'INSERT INTO QIWS.QCUSTCDT(CUSNUM,LSTNAM,INIT,STREET,CITY,STATE,ZIPCOD,CDTLMT,CHGCOD,BALDUE,CDTDUE) VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE ';
 
-    let sql = 'INSERT INTO QIWS.QCUSTCDT(CUSNUM,LSTNAM,INIT,STREET,CITY,STATE,ZIPCOD,CDTLMT,CHGCOD,BALDUE,CDTDUE) VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE ',
-      dbStmt = new Connection().connect().getStatement();
+      const statement = new Statement();
 
-    let params = [
-      [9997, idbp.IN, idbp.NUMERIC], //CUSNUM
-      ['Johnson', idbp.IN, idbp.CHAR], //LASTNAME
-      ['A J', idbp.IN, idbp.CHAR], //INITIAL
-      ['453 Example', idbp.IN, idbp.CHAR], //ADDRESS
-      ['Fort', idbp.IN, idbp.CHAR], //CITY
-      ['TN', idbp.IN, idbp.CHAR], //STATE
-      [37211, idbp.IN, idbp.NUMERIC], //ZIP
-      [1000, idbp.IN, idbp.NUMERIC], //CREDIT LIMIT
-      [1, idbp.IN, idbp.NUMERIC], // change
-      [150, idbp.IN, idbp.NUMERIC], //BAL DUE
-      [0.00, idbp.IN, idbp.NUMERIC] //CREDIT DUE
-    ];
-    await dbStmt.prepare(sql);
-    await dbStmt.bindParam(params);
-    await dbStmt.execute();
-    let result = await dbStmt.commit();
-    expect(result).to.be.true;
+      const params = [
+        [9997, IN, NUMERIC], // CUSNUM
+        ['Johnson', IN, CHAR], // LASTNAME
+        ['A J', IN, CHAR], // INITIAL
+        ['453 Example', IN, CHAR], // ADDRESS
+        ['Fort', IN, CHAR], // CITY
+        ['TN', IN, CHAR], // STATE
+        [37211, IN, NUMERIC], // ZIP
+        [1000, IN, NUMERIC], // CREDIT LIMIT
+        [1, IN, NUMERIC], // change
+        [150, IN, NUMERIC], // BAL DUE
+        [0.00, IN, NUMERIC], // CREDIT DUE
+      ];
+      await statement.prepare(sql);
+      await statement.bindParam(params);
+      await statement.execute();
+      const result = await statement.commit();
+      expect(result).to.equal(true);
+    });
   });
-});
 
-//if successful returns an array. of Type of objects
-describe('exec', () => {
-  it('performs action of given SQL String', async () => {
-    let dbConn = new Connection();
-    dbConn.debug(true);
-    let dbStmt = dbConn.connect().getStatement(),
-      sql = 'SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = 938472';
+  describe('exec', () => {
+    it('directly executes a given SQL String', async () => {
+      const connection = new Connection();
+      const statement = connection.connect().getStatement();
 
-    let result =  await dbStmt.exec(sql);
+      const sql = 'SELECT * FROM QIWS.QCUSTCDT WHERE CUSNUM = 938472';
 
-    console.log(`Exec results: ${JSON.stringify(result)}`);
-    expect(result).to.be.an('array');
-    expect(result.length).to.be.greaterThan(0);
+      const result = await statement.exec(sql);
+
+      expect(result).to.be.an('array');
+      expect(result.length).to.be.greaterThan(0);
+    });
   });
-});
 
-//if successful returns an array of length 0?. Why,even return it if size === 0?
-describe('execute', () => {
-  it('retrieves results from execute function:', async () =>{
-    let user = (process.env.USER).toUpperCase(),
-      sql = `CALL ${user}.MAXBAL(?)`,
-      dbConn = new Connection();
+  describe('execute', () => {
+    before('init stored procedure', async () => {
+      const pool = new DBPool({ url: '*LOCAL' });
 
-    dbConn.debug(true);
-    let dbStmt = dbConn.connect().getStatement(),
-      bal = 0;
-    await dbStmt.prepare(sql);
-    await dbStmt.bind([[bal, idbp.OUT, idbp.NUMERIC]]);
-    let result = await dbStmt.execute();
+      const findLib = `SELECT SCHEMA_NAME FROM qsys2.sysschemas WHERE SCHEMA_NAME = '${lib}'`;
+      const libResult = await pool.runSql(findLib);
 
-    console.log(`ExecuteAsync results:\n ${JSON.stringify(result)}`);
-    expect(result).to.be.a('array');
-    expect(result.length).to.be.greaterThan(0);
+      if (!libResult.length) {
+        const createLib = `CRTLIB LIB(${lib}) TYPE(*TEST) TEXT('Used to test Node.js toolkit')`;
+        // create the library
+        await pool.prepareExecute('CALL QSYS2.QCMDEXC(?)', [{ value: createLib, io: 'in' }]);
+        // eslint-disable-next-line no-console
+        console.log('before hook: Created lib');
+      }
+
+      const findSp = `SELECT OBJNAME FROM TABLE (QSYS2.OBJECT_STATISTICS('${lib}', '*PGM')) AS X`;
+      const spResult = await pool.runSql(findSp);
+      if (!spResult.length) {
+        const createSP = `CREATE PROCEDURE ${lib}.MAXBAL (OUT OUTPUT DECIMAL(6,2))
+      BEGIN
+      DECLARE MAXBAL NUMERIC ( 6 , 2 ) ;
+      SELECT MAX ( BALDUE ) INTO MAXBAL FROM QIWS.QCUSTCDT;
+      SET OUTPUT = MAXBAL;
+      END`;
+
+        await pool.runSql(createSP);
+        // eslint-disable-next-line no-console
+        console.log('before hook: Created Stored Procedure');
+      }
+    });
+
+    it('executes a stored procedure and returns output parameter', async () => {
+      const connection = new Connection();
+
+      const statement = connection.connect().getStatement();
+      const bal = 0;
+
+      await statement.prepare(`CALL ${lib}.MAXBAL(?)`);
+      await statement.bind([[bal, OUT, NUMERIC]]);
+      const result = await statement.execute();
+
+      expect(result).to.be.a('array');
+      expect(result.length).to.equal(1);
+      expect(result[0]).to.be.a('number');
+    });
   });
-});
 
-//if successful returns an array. of Type of objects
-describe('fetchAll', () => {
-  it('Fetches All rows from execute function:', async () => {
-    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbConn = new Connection();
+  describe('fetchAll', () => {
+    it('fetches All rows from the result set', async () => {
+      const connection = new Connection();
+      const statement = connection.connect().getStatement();
 
-    dbConn.debug(true);
-    let dbStmt = dbConn.connect().getStatement();
+      await statement.prepare('SELECT * FROM QIWS.QCUSTCDT');
+      await statement.execute();
+      const results = await statement.fetchAll();
 
-    await dbStmt.prepare(sql);
-    await dbStmt.execute();
-    let result = await dbStmt.fetchAll();
+      expect(results).to.be.a('array');
+      expect(results.length).to.be.greaterThan(0);
 
-    console.log(`Fetch All results:\n ${JSON.stringify(result)}`);
-    expect(result).to.be.a('array');
-    expect(result.length).to.be.greaterThan(0);
+      results.forEach((row) => {
+        expect(row).to.be.an('object');
+        expect(row).to.haveOwnProperty('CUSNUM');
+        expect(row).to.haveOwnProperty('LSTNAM');
+        expect(row).to.haveOwnProperty('INIT');
+        expect(row).to.haveOwnProperty('STREET');
+        expect(row).to.haveOwnProperty('CITY');
+        expect(row).to.haveOwnProperty('STATE');
+        expect(row).to.haveOwnProperty('ZIPCOD');
+        expect(row).to.haveOwnProperty('CDTLMT');
+        expect(row).to.haveOwnProperty('CDTLMT');
+        expect(row).to.haveOwnProperty('CHGCOD');
+        expect(row).to.haveOwnProperty('BALDUE');
+        expect(row).to.haveOwnProperty('CDTDUE');
+      });
+    });
   });
-});
 
-//if successful returns an Object of Row
-//kind of weird because FetchAll returns an Array(of objects? )
-describe('fetch', () => {
-  it('Fetches one row from execute function:', async () => {
-    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbConn = new Connection();
-    dbConn.debug(true);
-    let dbStmt = dbConn.connect().getStatement();
+  describe('fetch', () => {
+    it('fetches one row from the result set', async () => {
+      const connection = new Connection();
+      const statement = connection.connect().getStatement();
 
-    await dbStmt.prepare(sql);
-    await dbStmt.execute();
-    let result = await dbStmt.fetch();
+      await statement.prepare('SELECT * FROM QIWS.QCUSTCDT');
+      await statement.execute();
+      const result = await statement.fetch();
 
-    console.log(`Fetch result:\n ${JSON.stringify(result)}`);
-    expect(result).to.be.a('object');
+      expect(result).to.be.a('object');
+      expect(result).to.haveOwnProperty('CUSNUM');
+      expect(result).to.haveOwnProperty('LSTNAM');
+      expect(result).to.haveOwnProperty('INIT');
+      expect(result).to.haveOwnProperty('STREET');
+      expect(result).to.haveOwnProperty('CITY');
+      expect(result).to.haveOwnProperty('STATE');
+      expect(result).to.haveOwnProperty('ZIPCOD');
+      expect(result).to.haveOwnProperty('CDTLMT');
+      expect(result).to.haveOwnProperty('CDTLMT');
+      expect(result).to.haveOwnProperty('CHGCOD');
+      expect(result).to.haveOwnProperty('BALDUE');
+      expect(result).to.haveOwnProperty('CDTDUE');
+    });
   });
-});
 
-//if successful returns an Int
-describe('numFields', () => {
-  it('retrieves number of fields contained in result', async () => {
-    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new Connection().connect().getStatement();
+  describe('numFields', () => {
+    it('returns number of fields contained in result', async () => {
+      const statement = new Statement();
 
-    await dbStmt.prepare(sql);
-    await dbStmt.execute();
-    let fields = await dbStmt.numFields();
+      await statement.prepare('SELECT * FROM QIWS.QCUSTCDT');
+      await statement.execute();
+      const fields = await statement.numFields();
 
-    console.log(`Number of Fields: ${fields}`);
-    expect(fields).to.be.a('number');
+      expect(fields).to.be.a('number').to.equal(11);
+    });
   });
-});
 
-//if successful returns an Int
-describe('numRows', () => {
-  it('retrieves number of rows that were effected by a Querry', async () => {
-    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new Connection().connect().getStatement();
+  describe('numRows', () => {
+    it('returns number of rows that were effected by a query', async () => {
+      const sql = 'INSERT INTO QIWS.QCUSTCDT(CUSNUM,LSTNAM,INIT,STREET,CITY,STATE,ZIPCOD,CDTLMT,CHGCOD,BALDUE,CDTDUE) VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE ';
 
-    await dbStmt.prepare(sql);
-    await dbStmt.execute();
-    let rows = await dbStmt.numRows();
+      const statement = new Statement();
 
-    console.log(`Number of Rows: ${rows}`);
-    expect(rows).to.be.a('number');
+      const params = [
+        [9997, IN, NUMERIC], // CUSNUM
+        ['Johnson', IN, CHAR], // LAST NAME
+        ['A J', IN, CHAR], // INITIAL
+        ['453 Example', IN, CHAR], // ADDRESS
+        ['Fort', IN, CHAR], // CITY
+        ['TN', IN, CHAR], // STATE
+        [37211, IN, NUMERIC], // ZIP
+        [1000, IN, NUMERIC], // CREDIT LIMIT
+        [1, IN, NUMERIC], // change
+        [150, IN, NUMERIC], // BAL DUE
+        [0.00, IN, NUMERIC], // CREDIT DUE
+      ];
+      await statement.prepare(sql);
+      await statement.bindParam(params);
+      await statement.execute();
+      const rows = await statement.numRows();
+
+      expect(rows).to.be.a('number').and.to.equal(1);
+    });
   });
-});
 
-//if successful returns an Int
-describe('fieldType', () => {
-  it('requires an int index parameter. If a valid index is provided, returns the data type of the indicated column', async () => {
-    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new Connection().connect().getStatement();
+  describe('fieldType', () => {
+    it('returns the data type of the indicated column', async () => {
+      const statement = new Statement();
 
-    await dbStmt.prepare(sql);
-    await dbStmt.execute();
+      await statement.prepare('SELECT * FROM QIWS.QCUSTCDT');
+      await statement.execute();
 
-    let col1 = await dbStmt.fieldType(0),
-      col2 = await dbStmt.fieldType(1);
+      const type = await statement.fieldType(0);
 
-    console.log(`column 1 fieldType = ${col1}`);
-    console.log(`column 2 fieldType = ${col2}`);
-    expect(col1).to.be.a('number');
-    expect(col2).to.be.a('number');
+      expect(type).to.be.a('number').and.to.equal(2);
+    });
   });
-});
 
-//if successful returns an Int
-describe('fieldWidth', () => {
-  it('requires an int index parameter. If a valid index is provided, returns the field width of the indicated column', async () => {
-    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new Connection().connect().getStatement();
+  describe('fieldWidth', () => {
+    it('returns the field width of the indicated column', async () => {
+      const statement = new Statement();
 
-    await dbStmt.prepare(sql);
-    await dbStmt.execute();
+      await statement.prepare('SELECT * FROM QIWS.QCUSTCDT');
+      await statement.execute();
+      const width = await statement.fieldWidth(0);
 
-    let col1 = await dbStmt.fieldWidth(0),
-      col2 = await dbStmt.fieldWidth(1);
-
-    console.log(`column 1 fieldWidth = ${col1}`);
-    console.log(`column 2 fieldWidth = ${col2}`);
-    expect(col1).to.be.a('number');
-    expect(col2).to.be.a('number');
+      expect(width).to.to.equal(7);
+    });
   });
-});
 
-//if successful returns an Int but should return boolean based on doc , UPDATE 3-6-18 added logic to return the boolean. (makeBool method in idb-p)
-describe('fieldNullable', () => {
-  it('requires an int index parameter. If a valid index is provided, returns t/f if the indicated column can be Null', async () => {
-    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new Connection().connect().getStatement();
+  describe('fieldNullable', () => {
+    it('returns t/f if the indicated column is nullable', async () => {
+      const statement = new Statement();
 
-    await dbStmt.prepare(sql);
-    await dbStmt.execute();
+      await statement.prepare('SELECT * FROM QIWS.QCUSTCDT');
+      await statement.execute();
+      const nullable = await statement.fieldNullable(0);
 
-    let col1 = await dbStmt.fieldNullable(0),
-      col2 = await dbStmt.fieldNullable(1);
-
-    console.log(`column 1 Nullable? = ${col1}`);
-    console.log(`column 2 Nullable? = ${col2}`);
-    expect(col1).to.equal(false);
-    expect(col2).to.equal(false);
+      expect(nullable).to.equal(false);
+    });
   });
-});
 
-//if successful returns an String
-describe('fieldName', () => {
-  it('requires an int index parameter. If a valid index is provided,returns name of the indicated column ', async () => {
-    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new Connection().connect().getStatement();
+  describe('fieldName', () => {
+    it('returns name of the indicated column ', async () => {
+      const statement = new Statement();
 
-    await dbStmt.prepare(sql);
-    await dbStmt.execute();
+      await statement.prepare('SELECT * FROM QIWS.QCUSTCDT');
+      await statement.execute();
+      const name = await statement.fieldName(0);
 
-    let col1 = await dbStmt.fieldName(0),
-      col2 = await dbStmt.fieldName(1);
-
-    console.log(`column 1 Name = ${col1}`);
-    console.log(`column 2 Name = ${col2}`);
-    expect(col1).to.be.a('string');
-    expect(col2).to.be.a('string');
+      expect(name).to.equal('CUSNUM');
+    });
   });
-});
 
-//if successful returns an Int
-describe('fieldPrecise', () => {
-  it('requires an int index parameter. If a valid index is provided, returns the precision of the indicated column', async () => {
-    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new Connection().connect().getStatement();
+  describe('fieldPrecise', () => {
+    it('returns the precision of the indicated column', async () => {
+      const statement = new Statement();
 
-    await dbStmt.prepare(sql);
-    await dbStmt.execute();
+      await statement.prepare('SELECT * FROM QIWS.QCUSTCDT');
+      await statement.execute();
 
-    let col1 = await dbStmt.fieldPrecise(0),
-      col2 = await dbStmt.fieldPrecise(1);
+      const precision = await statement.fieldPrecise(0);
 
-    console.log('column 1 fieldPrecision = : ' + col1);
-    console.log('column 2 fieldPrecision = : ' + col2);
-    expect(col1).to.be.a('number');
-    expect(col2).to.be.a('number');
+      expect(precision).to.equal(6);
+    });
   });
-});
 
-//if successful returns an Int
+  describe('fieldScale', () => {
+    it('returns the scale of the indicated column', async () => {
+      const statement = new Statement();
 
-describe('fieldScale', () => {
-  it('requires an int index parameter. If a valid index is provided, returns the scale of the indicated column', async function(){
-    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new Connection().connect().getStatement();
+      await statement.prepare('SELECT * FROM QIWS.QCUSTCDT');
+      await statement.execute();
+      const scale = await statement.fieldScale(0);
 
-    await dbStmt.prepare(sql);
-    await dbStmt.execute();
-
-    let col1 = await dbStmt.fieldScale(0),
-      col2 = await dbStmt.fieldScale(1);
-
-    console.log(`column 1 fieldScale = ${col1}`);
-    console.log(`column 2 fieldScale = ${col2}`);
-    expect(col1).to.be.a('number');
-    expect(col2).to.be.a('number');
+      expect(scale).to.equal(0);
+    });
   });
-});
 
-//if successful returns undefined
-describe('setStmtAttr', () => {
-  it('sets StmtAttr Attrubte should be INT. Value can String or Int depending on the attribute', async () => {
-    let attr = idbp.SQL_ATTR_FOR_FETCH_ONLY,
-      value = 1,
-      dbStmt = new Connection().connect().getStatement();
+  describe('setStmtAttr', () => {
+    it('sets the value of a specified statement attribute', async () => {
+      const attr = SQL_ATTR_FOR_FETCH_ONLY;
+      const value = 1;
 
-    let result = await dbStmt.setStmtAttr(attr, value);
-    expect(result).to.be.true;
+      const statement = new Statement();
+      const result = await statement.setStmtAttr(attr, value);
+      expect(result).to.equal(true);
+    });
   });
-});
 
-//if successful returns String or Int depending on attribute
-describe('getStmtAttr', () => {
-  it('if statement attribute exsits should return type String or Int depending on the attribute type', async () => {
-    let attr = idbp.SQL_ATTR_FOR_FETCH_ONLY,
-      dbStmt = new Connection().connect().getStatement();
+  describe('getStmtAttr', () => {
+    it('returns the value of specified attribute', async () => {
+      const attr = SQL_ATTR_FOR_FETCH_ONLY;
+      const statement = new Statement();
 
-    let result = await dbStmt.getStmtAttr(attr);
-    console.log(`Stmt Attr: ${result}`);
-    expect(result).to.satisfy(function(result){
-      return result === 'string' || typeof result === 'number';
+      const result = await statement.getStmtAttr(attr);
+
+      expect(result).to.equal(0);
+    });
+  });
+
+  describe('rollback', () => {
+    it('rollback changes made on the connection', async () => {
+      const statement = new Statement();
+
+      await statement.prepare('SELECT * FROM QIWS.QCUSTCDT');
+      await statement.execute();
+      const result = await statement.rollback();
+
+      expect(result).to.equal(true);
+    });
+  });
+
+  // TODO
+  describe.skip('stmtError', () => {
+    it('Returns the diagnostic information ', async () => {
+
+    });
+  });
+
+  // TODO
+  describe.skip('nextResult', () => {
+    it('Determines whether there is another result set', async () => {
+
     });
   });
 });
-
-// whats the passing use case for next Result?
-// describe('nextResult', () => {
-// 	it('Determines whether there is more information available on the statement', async () => {
-// 		let sql = "SELECT * FROM QIWS.QCUSTCDT";
-// 		let dbStmt = new Connection().connect().getStatement();
-// 		await dbStmt.prepare(sql);
-// 		await dbStmt.execute();
-// 		let result = await dbStmt.nextResult();
-// 		expect(res).to.be.a('object');
-// 	});
-// })
-
-//if successful returns undefined
-describe('rollback', () => {
-  it('Rollback all changes to the database that have been made on the connection', async () => {
-    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbStmt = new Connection().connect().getStatement();
-
-    await dbStmt.prepare(sql);
-    await dbStmt.execute();
-    let result = await dbStmt.rollback();
-    expect(result).to.be.true;
-  });
-});
-
-
-//how to test this?
-// describe('stmtError' , () => {
-
-// 	it('Returns the diagnostic information ', async () =>{
-// 			let dbStmt =  new Connection().connect().getStatement();
-// 			await dbStmt.stmtError(hType, recno);
-
-// 	});
-// })
