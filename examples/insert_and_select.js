@@ -1,36 +1,47 @@
-const idbp = require('idb-pconnector');
-const {Connection} = idbp;
+const {
+  Connection, Statement, IN, NUMERIC, CHAR,
+} = require('../lib/idb-pconnector');
 
 async function execExample() {
-  try {
-    let statement =  new Connection().connect().getStatement();
+  const connection = new Connection({ url: '*LOCAL' });
+  const statement = new Statement(connection);
 
-    let result = await statement.exec('SELECT * FROM MYSCHEMA.TABLE');
+  const results = await statement.exec('SELECT * FROM QIWS.QCUSTCDT');
 
-    console.log(`Select results: \n${JSON.stringify(result)}`);
-
-  } catch (error) {
-    console.error(`Error was: \n${error.stack}`);
-  }
+  console.log(`results:\n ${JSON.stringify(results)}`);
 }
 
-execExample();
+execExample().catch((error) => {
+  console.error(error);
+});
+
 
 async function pbeExample() {
-  try {
-    let statement =  new Connection().connect().getStatement();
+  const connection = new Connection({ url: '*LOCAL' });
 
-    await statement.prepare('INSERT INTO MYSCHEMA.TABLE VALUES (?,?)');
+  const statement = new Statement(connection);
 
-    await statement.bind([
-      [2018, idbp.IN, idbp.INT],
-      ['example', idbp.IN, idbp.CHAR]
-    ]);
-    await statement.execute();
+  const sql = 'INSERT INTO QIWS.QCUSTCDT VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE';
 
-  } catch (error) {
-    console.error(`Error was: \n${error.stack}`);
-  }
+  await statement.prepare(sql);
+
+  await statement.bindParam([
+    [9997, IN, NUMERIC],
+    ['Johnson', IN, CHAR],
+    ['A J', IN, CHAR],
+    ['453 Example', IN, CHAR],
+    ['Fort', IN, CHAR],
+    ['TN', IN, CHAR],
+    [37211, IN, NUMERIC],
+    [1000, IN, NUMERIC],
+    [1, IN, NUMERIC],
+    [150, IN, NUMERIC],
+    [0.00, IN, NUMERIC],
+  ]);
+
+  await statement.execute();
 }
 
-pbeExample();
+pbeExample().catch((error) => {
+  console.error(error);
+});
