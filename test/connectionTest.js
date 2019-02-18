@@ -5,144 +5,142 @@
 * To see results of individual test cases you can run npm test -g name_of_test
 */
 
-const assert = require('chai').assert;
-const expect = require('chai').expect;
-const {Connection} = require('../lib/idb-pconnector');
+/* eslint-env mocha */
 
+const { expect } = require('chai');
+const { Connection } = require('../lib/idb-pconnector');
 
-// Test Connection Class
+describe('Connection Class Tests', () => {
+  describe('constructor', () => {
+    it('creates Connection object and connects to *LOCAL as current user', async () => {
+      const dbConn = new Connection({ url: '*LOCAL' });
 
-describe('Connection constructor connect', () => {
-  it('should attempt to connect if the db object parameter is provided', async () => {
-    let dbConn = new Connection({url: '*LOCAL'});
-
-    expect(dbConn.isConnected()).to.be.true;
-  });
-});
-
-describe('Connection constructor connect', () => {
-  it('should attempt to connect if the db object parameter is provided', async () => {
-    let dbConn = new Connection({url: '*LOCAL', username: process.env.USERID, password: process.env.PASSWD});
-
-    expect(dbConn.isConnected()).to.be.true;
-  });
-});
-
-describe('connect', () => {
-  it('should return a newly connected dbconn object', async () => {
-    let dbConn = new Connection(),
-      connReturned = dbConn.connect();
-
-    expect(connReturned.isConnected()).to.be.true;
-    expect(connReturned.dbconn).to.be.a('dbconn');
-  });
-});
-
-describe('connect with user & password', () => {
-  it('should return a newly connected dbconn object', async () => {
-    let dbConn = new Connection(),
-      connReturned = dbConn.connect('*LOCAL', process.env.USERID, process.env.PASSWD);
-
-    expect(connReturned.isConnected()).to.be.true;
-    expect(connReturned.dbconn).to.be.a('dbconn');
-  });
-});
-
-describe('getStatement', () => {
-  it('should return a new statemetnt intiialized with the the dbconn', async () => {
-    let dbConn = new Connection().connect(),
-      stmtReturned = dbConn.getStatement();
-
-    expect(stmtReturned.stmt).to.be.a('dbstmt');
-  });
-});
-
-//if successful returns String
-describe('validStmt', () => {
-  it('if the SQL is valid, validStmt , should return type String', async () => {
-    let sql = 'SELECT * FROM QIWS.QCUSTCDT',
-      dbConn = new Connection().connect(),
-      res = await dbConn.validStmt(sql);
-
-    expect(res).to.be.a('string');
-  });
-});
-
-//if successful returns String or Int depending on attribute
-describe('getConnAttr', () => {
-  it('if connection attribute exsits should return type String or Int depending on the attribute type', async () => {
-    let attr = 0,
-      dbConn = new Connection().connect(),
-      res = await dbConn.getConnAttr(attr);
-
-    expect(res).to.satisfy(function(res){
-      return res === 'string' || typeof res === 'number';
+      expect(dbConn.isConnected()).to.equal(true);
     });
 
+    it('creates Connection object and connects to specified db as specified user', async () => {
+      if (!process.env.DBUSER || !process.env.DBPASS) {
+        throw new Error('Must specify DBUSER DBPASS environment variables');
+      }
+      const dbConn = new Connection({
+        url: '*LOCAL',
+        username: process.env.DBUSER,
+        password: process.env.DBPASS,
+      });
+
+      expect(dbConn.isConnected()).to.equal(true);
+    });
   });
-});
 
-//if successful returns undefined
-describe('setConnAttr', () => {
-  it('sets the ConnAttr. Attrubte should be INT. Value can String or Int depending on the attribute', async () => {
-    let attr = 0,
-      value = 2,
-      dbConn = new Connection().connect(),
-      res = await dbConn.setConnAttr(attr, value);
+  describe('connect', () => {
+    it('connects to *LOCAL when no params passed', async () => {
+      const dbConn = new Connection();
 
-    expect(res).to.be.true;
+      const connReturned = dbConn.connect();
+
+      expect(connReturned.isConnected()).to.equal(true);
+      expect(connReturned.dbconn).to.be.a('dbconn');
+    });
+
+    it('connects with passed db, user, password params', async () => {
+      if (!process.env.DBUSER || !process.env.DBPASS) {
+        throw new Error('Must specify DBUSER DBPASS environment variables');
+      }
+      const dbConn = new Connection();
+      const connReturned = dbConn.connect('*LOCAL', process.env.DBUSER, process.env.DBPASS);
+
+      expect(connReturned.isConnected()).to.equal(true);
+      expect(connReturned.dbconn).to.be.a('dbconn');
+    });
   });
-});
 
-//if successful returns undefined
-describe('debug', () => {
-  it('prints more detailed info if choice = true. Turned off by setting choice = false.', async () => {
-    let choice = true,
-      dbConn = new Connection().connect(),
-      res = await dbConn.debug(choice);
+  describe('getStatement', () => {
+    it('should return a new statement initialized with the the dbconn', async () => {
+      const dbConn = new Connection().connect();
+      const stmtReturned = dbConn.getStatement();
 
-    expect(res).to.be.true;
+      expect(stmtReturned.stmt).to.be.a('dbstmt');
+    });
   });
-});
 
-//if successful returns undefined
-describe('disconn', () => {
-  it('disconnects an exsisting connection to the datbase. ', async () => {
-    let dbConn = new Connection().connect(),
-      res = await dbConn.disconn();
+  describe('validStmt', () => {
+    it('checks of a given sql is valid', async () => {
+      const sql = 'SELECT * FROM QIWS.QCUSTCDT';
+      const dbConn = new Connection().connect();
+      const res = await dbConn.validStmt(sql);
 
-    expect(res).to.be.true;
+      expect(res).to.be.equal(sql);
+    });
   });
-});
 
-//if successful returns undefined
-describe('close', () => {
-  it('frees the connection object. ', async () => {
-    let dbConn = new Connection().connect();
+  describe('getConnAttr', () => {
+    it('returns the value of specified connection attribute', async () => {
+      const attr = 0;
+      const dbConn = new Connection().connect();
+      const returnValue = await dbConn.getConnAttr(attr);
 
-    await dbConn.disconn();
-
-    let res = await dbConn.close();
-
-    expect(res).to.be.true;
+      expect(returnValue).to.equal(2);
+    });
   });
-});
 
-describe('isConnected', () => {
-  it('returns true/false if Connection object is connected ', async () => {
-    let dbConn = new Connection(),
-      before = dbConn.isConnected();
-    expect(before).to.be.false;
+  describe('setConnAttr', () => {
+    it('sets the value of specified connection attribute', async () => {
+      const attr = 0;
+      const value = 2;
+      const dbConn = new Connection().connect();
+      const res = await dbConn.setConnAttr(attr, value);
 
-    dbConn.connect();
+      expect(res).to.equal(true);
+    });
+  });
 
-    let after = dbConn.isConnected();
+  describe('debug', () => {
+    it('prints more detailed info if choice = true', async () => {
+      const choice = true;
+      const dbConn = new Connection().connect();
+      const res = await dbConn.debug(choice);
 
-    expect(after).to.be.true;
+      expect(res).to.equal(true);
+    });
+  });
 
-    await dbConn.disconn();
+  describe('disconn', () => {
+    it('disconnects an existing connection to the database', async () => {
+      const dbConn = new Connection().connect();
+      const res = await dbConn.disconn();
 
-    let last = dbConn.isConnected();
-    expect(last).to.be.false;
+      expect(res).to.equal(true);
+    });
+  });
+
+  describe('close', () => {
+    it('frees the connection object', async () => {
+      const dbConn = new Connection().connect();
+
+      await dbConn.disconn();
+
+      const res = await dbConn.close();
+
+      expect(res).to.equal(true);
+    });
+  });
+
+  describe('isConnected', () => {
+    it('returns true/false if Connection object is connected', async () => {
+      const dbConn = new Connection();
+      const before = dbConn.isConnected();
+      expect(before).to.equal(false);
+
+      dbConn.connect();
+
+      const after = dbConn.isConnected();
+
+      expect(after).to.equal(true);
+
+      await dbConn.disconn();
+
+      const last = dbConn.isConnected();
+      expect(last).to.equal(false);
+    });
   });
 });
