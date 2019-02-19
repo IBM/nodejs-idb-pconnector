@@ -1,4 +1,7 @@
 package-lock.json
 node_modules
 examples
-.eslintrc
+.eslintrc.js
+AUTHORS.md
+.github
+CONTRIBUTING.md
