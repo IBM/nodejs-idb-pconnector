@@ -1,19 +1,21 @@
 const { DBPool } = require('../lib/idb-pconnector');
 
-const pool = new DBPool({ url: '*LOCAL' });
+const pool = new DBPool();
 
 async function poolExample() {
   // attach() returns an available connection from the pool.
   const connection = pool.attach();
-  const statement = connection.getStatement();
-  await statement.prepare('CALL QSYS2.TCPIP_INFO()');
-  await statement.execute();
-  const results = await statement.fetchAll();
 
-  if (results) {
-    console.log(`results:\n ${JSON.stringify(results)}`);
-  }
-  // closes statements makes the Connection available for reuse.
+  const statement = connection.getStatement();
+  // linter complains about `` to use ''
+  // in this case `` easier to read then escaping ''
+  // eslint-disable-next-line quotes
+  const sql = `CALL QSYS2.SET_PASE_SHELL_INFO('*CURRENT', '/QOpenSys/pkgs/bin/bash')`;
+
+  await statement.prepare(sql);
+  await statement.execute();
+
+  // closes statements makes the Connection available for reuse
   await pool.detach(connection);
 }
 
