@@ -1,18 +1,14 @@
-# **idb-pconnector - Promise based DB2 Connector for IBM i** <!-- omit in toc -->
+# **idb-pconnector - Promise-based DB2 Connector for IBM i** <!-- omit in toc -->
 
 **Project Status**: (production ready as a "technology preview")
 
-**Objective**: provide a promise based database connector for DB2 on IBM i.
+**Objective**: provide a promise-based database connector for DB2 on IBM i.
 
-
-This project is a promise based wrapper over the [`idb-connector`](https://bitbucket.org/litmis/nodejs-idb-connector) project.
-
+This project is a promise-based wrapper over the [`idb-connector`](https://github.com/IBM/nodejs-idb-connector) project that enables the use of modern JavaScript's [async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function) syntax.
 
 Connection Pooling is supported by using the `DBPool` class.
 
-The `DBPool` class includes integrated aggregates (runSql and prepareExecute),
-
-which make it easier to directly execute a query or prepare, bind, and execute.
+The `DBPool` class includes integrated aggregates (runSql and prepareExecute) to simplify your code.
 
 # **Table of Contents** <!-- omit in toc -->
 - [**Install**](#install)
@@ -28,19 +24,17 @@ which make it easier to directly execute a query or prepare, bind, and execute.
 
 
 # **Install**
-This project is a Node.js module available through npm (node package manager).
 
 `npm install idb-pconnector`
 
-***NOTE*** 
+**NOTE**
 
-`idb-pconnector` currently only supports IBM i installation
+This package only installs on IBM i systems.
 
 # **Examples**
 
 ### exec
-Using Async & Await, to run a select statement & displaying the result set:
-
+Using `exec` method to run a select statement and return the result set:
 
 ```javascript
 const { Connection, Statement, } = require('idb-pconnector');
@@ -60,7 +54,7 @@ execExample().catch((error) => {
 
 ```
 ### prepare bind execute
-Using Async & Await, to prepare, bind, and execute an insert statement:
+Using `prepare`, `bind`, and `execute` methods to insert data:
 
 ```javascript
 const {
@@ -100,20 +94,22 @@ pbeExample().catch((error) => {
 ```
 ### DBPool
 
-Using DBPool to attach a connection , execute a stored procedure , and finally detach the connection.
+Using `DBPool` to return a connection then call a stored procedure:
 
 ```javascript
 const { DBPool } = require('idb-pconnector');
 
 async function poolExample() {
-  const pool = new DBPool({ url: '*LOCAL' });
+  const pool = new DBPool();
+
   const connection = pool.attach();
+
   const statement = connection.getStatement();
 
-  await statement.prepare('CALL QSYS2.TCPIP_INFO()');
-  await statement.execute();
+  const sql = `CALL QSYS2.SET_PASE_SHELL_INFO('*CURRENT', '/QOpenSys/pkgs/bin/bash')`
 
-  const results = await statement.fetchAll();
+  await statement.prepare(sql);
+  await statement.execute();
 
   if (results) {
     console.log(`results:\n ${JSON.stringify(results)}`);
@@ -128,10 +124,7 @@ poolExample().catch((error) => {
 ```
 ### prepareExecute
 
-Example Using DBPool prepareExecute(sql,params,options) method to Prepare and Execute a statement.
-
-If you want to bind variables pass an array of values as the second parameter.
-
+Using `prepareExecute` method to insert data:
 
 ```javascript
 const { DBPool } = require('idb-pconnector');
@@ -143,7 +136,7 @@ async function prepareExecuteExample() {
    * The order of the params indexed in the array
    * should map to the order of the parameter markers
    */
-  const pool = new DBPool({ url: '*LOCAL' });
+  const pool = new DBPool();
 
   const sql = 'INSERT INTO QIWS.QCUSTCDT VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE';
 
@@ -159,9 +152,11 @@ prepareExecuteExample().catch((error) => {
 ```
 ### runSql
 
-Example Using DBPool runSql(sql) method to directly run an sql statement.
+Using `runSql` method to directly execute a select statement:
 
-***NOTE*** This method will not work with stored procedures use prepareExecute() instead.
+**NOTE**
+
+This method will not work with stored procedures use prepareExecute() instead.
 
 
 ```javascript
@@ -171,7 +166,7 @@ async function runSqlExample() {
   /*
    * Directly execute a statement by providing the SQL to the runSql() function.
    */
-  const pool = new DBPool({ url: '*LOCAL' });
+  const pool = new DBPool();
 
   const results = await pool.runSql('SELECT * FROM QIWS.QCUSTCDT');
 
@@ -188,11 +183,10 @@ runSqlExample().catch((error) => {
 
 # **Documentation**
 
-Please refer to [docs](https://github.com/IBM/nodejs-idb-pconnector/blob/master/docs/README.md) for usage.
+Please read the [docs](https://github.com/IBM/nodejs-idb-pconnector/blob/master/docs/README.md).
 
 # **License**
-MIT - View [LICENSE](https://github.com/IBM/nodejs-idb-pconnector/blob/master/LICENSE)
-
+[MIT](https://github.com/IBM/nodejs-idb-pconnector/blob/master/LICENSE)
 # **Contributing**
 Please read the [contribution guidelines](https://github.com/IBM/nodejs-idb-pconnector/blob/master/CONTRIBUTING.md).
 
