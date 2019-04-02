@@ -12,6 +12,7 @@
   - [**Connection.isConnected()**](#connectionisconnected)
   - [**Connection.setConnAttr(attribute, value)**](#connectionsetconnattrattribute-value)
   - [**Connection.validStmt(sql)**](#connectionvalidstmtsql)
+  - [**Connection.setLibraryList(sql)**](#connectionsetlibrarylistlist)
 - [**Class: Statement**](#class-statement)
   - [**Constructor: Statement(connection)**](#constructor-statementconnection)
   - [**Statement.bindParam(params)**](#statementbindparamparams)
@@ -154,6 +155,13 @@ Checks if the given SQL is valid and interprets vendor escape clauses.
 
 **Returns**: `Promise` when resolved will return the transformed sql string that is seen by the data source, or the promise will be rejected.
 
+## **Connection.setLibraryList(list)**
+
+Change to system naming and set the library list (using `CHGLIBL`) of the connection.
+
+**Parameters**:
+
+- **list**: `String[]`, the new library list
 
 # **Class: Statement**
 

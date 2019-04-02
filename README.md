@@ -18,6 +18,7 @@ The `DBPool` class includes integrated aggregates (runSql and prepareExecute) to
     - [DBPool](#dbpool)
     - [prepareExecute](#prepareexecute)
     - [runSql](#runsql)
+    - [setLibraryList](#setlibrarylist)
 - [**Documentation**](#documentation)
 - [**License**](#license)
 - [**Contributing**](#contributing)
@@ -179,6 +180,24 @@ runSqlExample().catch((error) => {
   console.error(error);
 });
 
+```
+
+### setLibraryList
+
+Change to system naming and set the library list (using `CHGLIBL`) of the connection.
+
+```javascript
+async function execExample() {
+  const connection = new Connection({ url: '*LOCAL' });
+
+  await connection.setLibraryList(['QIWS']);
+
+  const statement = connection.getStatement();
+  const results = await statement.exec('SELECT * FROM QCUSTCDT');
+  console.log(`results:\n ${JSON.stringify(results)}`);
+
+  await statement.close();
+}
 ```
 
 # **Documentation**
