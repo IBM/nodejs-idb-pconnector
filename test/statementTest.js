@@ -7,16 +7,32 @@
 /* eslint-env mocha */
 
 const { expect } = require('chai');
-const idbp = require('../lib/idb-pconnector');
-const DBPool = require('../lib/dbPool');
 
 const {
-  Connection, Statement, IN, OUT, NUMERIC, CHAR, SQL_ATTR_FOR_FETCH_ONLY,
-} = idbp;
+  Connection, Statement, DBPool, IN, OUT, NUMERIC, CHAR, SQL_ATTR_FOR_FETCH_ONLY, NULL,
+} = require('../lib/idb-pconnector');
 
-const lib = 'IDBPTEST';
+const schema = 'IDBPTEST';
 
 describe('Statement Class Tests', () => {
+  before('setup schema for tests', async () => {
+    const pool = new DBPool({ url: '*LOCAL' }, { incrementSize: 2 });
+    const createSchema = `CREATE SCHEMA ${schema}`;
+    const findSchema = `SELECT SCHEMA_NAME FROM qsys2.sysschemas WHERE SCHEMA_NAME = '${schema}'`;
+
+    const schemaResult = await pool.runSql(findSchema);
+
+    if (!schemaResult.length) {
+      await pool.runSql(createSchema).catch((error) => {
+        // eslint-disable-next-line no-console
+        console.log(`UNABLE TO CREATE ${schema} SCHEMA!`);
+        throw error;
+      });
+      // eslint-disable-next-line no-console
+      console.log(`before hook: CREATED ${schema}`);
+    }
+  });
+
   describe('constructor with connection parameter', () => {
     it('creates a new Statement object by passing a connection object', async () => {
       const connection = new Connection().connect();
@@ -84,6 +100,24 @@ describe('Statement Class Tests', () => {
   });
 
   describe('bindParams', () => {
+    before('create table for test', async () => {
+      const pool = new DBPool({ url: '*LOCAL' }, { incrementSize: 2 });
+      const createTable = `CREATE TABLE ${schema}.SCORES(team VARCHAR(100) ALLOCATE(20), score INTEGER)`;
+      const findTable = `SELECT OBJLONGNAME FROM TABLE (QSYS2.OBJECT_STATISTICS('${schema}', '*FILE')) AS X WHERE OBJLONGNAME = 'SCORES'`;
+
+      const tableResult = await pool.runSql(findTable);
+
+      if (!tableResult.length) {
+        await pool.runSql(createTable).catch((error) => {
+          // eslint-disable-next-line no-console
+          console.log('Unable to create SCORES table');
+          throw error;
+        });
+        // eslint-disable-next-line no-console
+        console.log('before hook: CREATED SCORES TABLE');
+      }
+    });
+
     it('associate parameter markers in an SQL to app variables', async () => {
       const sql = 'INSERT INTO QIWS.QCUSTCDT(CUSNUM,LSTNAM,INIT,STREET,CITY,STATE,ZIPCOD,CDTLMT,CHGCOD,BALDUE,CDTDUE) VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE';
 
@@ -116,6 +150,21 @@ describe('Statement Class Tests', () => {
       const rowsAfterCount = Number.parseInt(countResultAgain[0].COUNT, 10);
 
       expect(rowsAfterCount).to.equal(rowsBeforeCount + 1);
+    });
+
+    it('binds a null value, tests issue #40', async () => {
+      const sql = `INSERT INTO ${schema}.SCORES(TEAM, SCORE) VALUES (?,?)`;
+
+      const statement = new Statement();
+
+      const params = [
+        ['EXAMPLE', IN, CHAR], // TEAM
+        [null, IN, NULL], // SCORE
+      ];
+
+      await statement.prepare(sql);
+      await statement.bindParam(params);
+      await statement.execute();
     });
   });
 
@@ -184,29 +233,22 @@ describe('Statement Class Tests', () => {
   describe('execute', () => {
     before('init stored procedure', async () => {
       const pool = new DBPool({ url: '*LOCAL' });
+      const findSp = `SELECT OBJLONGNAME FROM TABLE (QSYS2.OBJECT_STATISTICS('${schema}', '*PGM')) AS X`;
 
-      const findLib = `SELECT SCHEMA_NAME FROM qsys2.sysschemas WHERE SCHEMA_NAME = '${lib}'`;
-      const libResult = await pool.runSql(findLib);
-
-      if (!libResult.length) {
-        const createLib = `CRTLIB LIB(${lib}) TYPE(*TEST) TEXT('Used to test Node.js toolkit')`;
-        // create the library
-        await pool.prepareExecute('CALL QSYS2.QCMDEXC(?)', [{ value: createLib, io: 'in' }]);
-        // eslint-disable-next-line no-console
-        console.log('before hook: Created lib');
-      }
-
-      const findSp = `SELECT OBJNAME FROM TABLE (QSYS2.OBJECT_STATISTICS('${lib}', '*PGM')) AS X`;
       const spResult = await pool.runSql(findSp);
       if (!spResult.length) {
-        const createSP = `CREATE PROCEDURE ${lib}.MAXBAL (OUT OUTPUT DECIMAL(6,2))
+        const createSP = `CREATE PROCEDURE ${schema}.MAXBAL (OUT OUTPUT DECIMAL(6,2))
       BEGIN
       DECLARE MAXBAL NUMERIC ( 6 , 2 ) ;
       SELECT MAX ( BALDUE ) INTO MAXBAL FROM QIWS.QCUSTCDT;
       SET OUTPUT = MAXBAL;
       END`;
 
-        await pool.runSql(createSP);
+        await pool.runSql(createSP).catch((error) => {
+          // eslint-disable-next-line no-console
+          console.log('UNABLE TO CREATE STORED PROCEDURE!');
+          throw error;
+        });
         // eslint-disable-next-line no-console
         console.log('before hook: Created Stored Procedure');
       }
@@ -218,7 +260,7 @@ describe('Statement Class Tests', () => {
       const statement = connection.connect().getStatement();
       const bal = 0;
 
-      await statement.prepare(`CALL ${lib}.MAXBAL(?)`);
+      await statement.prepare(`CALL ${schema}.MAXBAL(?)`);
       await statement.bind([[bal, OUT, NUMERIC]]);
       const result = await statement.execute();
 
