@@ -1,6 +1,6 @@
 {
   "name": "idb-pconnector",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Promise based DB2 Connector for IBM i",
   "main": "lib/idb-pconnector.js",
   "scripts": {
