@@ -187,7 +187,7 @@ runSqlExample().catch((error) => {
 Change to system naming and set the library list (using `CHGLIBL`) of the connection.
 
 ```javascript
-const { Connection } = require('./lib/idb-pconnector.js');
+const { Connection } = require('idb-pconnector');
 
 async function setLibListExample() {
   const connection = new Connection({ url: '*LOCAL' });
