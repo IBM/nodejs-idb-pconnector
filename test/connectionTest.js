@@ -143,4 +143,20 @@ describe('Connection Class Tests', () => {
       expect(last).to.equal(false);
     });
   });
+
+  describe('setLibraryList', () => {
+    it('sets the user portion of the library list for the current connection', async () => {
+      const dbConn = new Connection({ url: '*LOCAL' });
+      const statement = dbConn.getStatement();
+
+      await dbConn.setLibraryList(['QIWS', 'QXMLSERV']);
+      const after = await statement.exec("SELECT * from qsys2.library_list_info WHERE TYPE = 'USER'");
+      expect(after).to.be.a('array');
+      expect(after.length).to.equal(2);
+      expect(after[0]).to.be.a('object');
+      expect(after[0].SCHEMA_NAME).to.equal('QIWS');
+      expect(after[1]).to.be.a('object');
+      expect(after[1].SCHEMA_NAME).to.equal('QXMLSERV');
+    });
+  });
 });
