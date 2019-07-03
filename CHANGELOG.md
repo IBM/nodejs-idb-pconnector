@@ -1,4 +1,6 @@
 # idb-pconnector change log
+# 1.0.6
+Add implementation of setLibraryList API see PR [#39](https://github.com/IBM/nodejs-idb-pconnector/pull/39)
 # 1.0.5
 Patched `prepareExecute` issue outlined in [#40](https://github.com/IBM/nodejs-idb-pconnector/issues/40)
 
