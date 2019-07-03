@@ -1,4 +1,6 @@
 # idb-pconnector change log
+# 1.0.7
+Fix up setLibraryList example require statement see [03ce835](https://github.com/IBM/nodejs-idb-pconnector/commit/03ce835095551f660b64cac84d8f8cf8c8bc4ba9)
 # 1.0.6
 Add implementation of setLibraryList API see PR [#39](https://github.com/IBM/nodejs-idb-pconnector/pull/39)
 # 1.0.5
