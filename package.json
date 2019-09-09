@@ -20,13 +20,13 @@
   "license": "MIT",
   "homepage": "https://github.com/IBM/nodejs-idb-pconnector#readme",
   "dependencies": {
-    "idb-connector": "^1.2.0"
+    "idb-connector": "^1.2.2"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
-    "eslint": "^5.13.0",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.16.0",
-    "mocha": "^5.2.0"
+    "chai": "^4.2.0",
+    "eslint": "^6.3.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "mocha": "^6.2.0"
   }
 }
