@@ -20,6 +20,7 @@
   - [**Statement.close()**](#statementclose)
   - [**Statement.closeCursor()**](#statementclosecursor)
   - [**Statement.commit()**](#statementcommit)
+  - [**Statement.enableNumericTypeConversion(flag)**](#statementenablenumerictypeconversionflag)
   - [**Statement.exec(sql)**](#statementexecsql)
   - [**Statement.execute()**](#statementexecute)
   - [**Statement.fetch()**](#statementfetch)
@@ -459,6 +460,22 @@ Returns the diagnostic information associated with the most recently called func
 
 
 **Returns**: `Promise` when resolved returns `String` or the promise is rejected.
+
+## **Statement.enableNumericTypeConversion(flag)**
+
+Enables or disables automatic numeric conversion.
+
+**Parameters**:
+
+- **flag:** `boolean` to turn automatic data conversion mode on or off. Default value is `false`.
+
+    - `true`: SQL numeric types (`INTEGER`, `DECIMAL`, `NUMERIC`) are converted to Javascript `Number` objects instead of strings. Due to the data type limitations of Javascript `Number`s, precision may be lost. If the SQL value is outside the bounds of what a `Number` can represent, it will be returned as a string instead.
+
+    - `false`: The result data is returned as strings.
+
+
+**Returns**: `boolean` the current state of the flag otherwise an error is thrown.
+
 
 # **Class: DBPool**
 
