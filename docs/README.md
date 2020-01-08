@@ -15,8 +15,8 @@
   - [**Connection.setLibraryList(list)**](#connectionsetlibrarylistlist)
 - [**Class: Statement**](#class-statement)
   - [**Constructor: Statement(connection)**](#constructor-statementconnection)
-  - [**Statement.bindParam(params)**](#statementbindparamparams)
-  - [**Statement.bind(params)**](#statementbindparams)
+  - [**Statement.bindParam(params)**](#statementbindparamparams-options)
+  - [**Statement.bind(params)**](#statementbindparams-options)
   - [**Statement.close()**](#statementclose)
   - [**Statement.closeCursor()**](#statementclosecursor)
   - [**Statement.commit()**](#statementcommit)
@@ -174,7 +174,7 @@ Change to system naming and set the library list (using `CHGLIBL`) of the connec
 ***NOTE***: If you don't pass a `Connection Object` one will be implicitly created and will attempt to connect to `*LOCAL`.
 
 
-## **Statement.bindParam(params)**
+## **Statement.bindParam(params, options)**
 
 Associates parameter markers in an sql statement to application variables.
 
@@ -205,13 +205,17 @@ These values are constants which are attached to object returned when you `const
 
 You can access the constants like so : `idbp.IN`
 
+- **options**: `Object` optional configuration object for `bindParam()`.
+    - `setupParams`: `boolean` Allows `params` to be an array of values and will format the parameters for you.
+       When set to `true` it allows `params` to behave as documented in [prepareExecute](#dbpoolprepareexecutesql-params-options)
+
 **Returns**: `Promise` when resolved there is no return value but if an error occurred the promise will be rejected.
 
 **Example**: [Here](https://github.com/ibm/nodejs-idb-pconnector#prepare-bind-execute)
 
-## **Statement.bind(params)**
+## **Statement.bind(params, options)**
 
-Shorthand equivalent of `bindParam(params)` above.
+Shorthand equivalent of `bindParam(params, options)` above.
 
 
 ## **Statement.close()**
