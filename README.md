@@ -1,3 +1,8 @@
+[![npm](https://img.shields.io/npm/v/idb-pconnector?logo=npm)](https://www.npmjs.com/package/idb-pconnector)
+[![ryver-chat](https://img.shields.io/badge/Ryver-Chat-blue)](https://ibmioss.ryver.com/index.html#forums/1000127)
+[![ryver-signup](https://img.shields.io/badge/Ryver-Signup-blue)](https://ibmioss.ryver.com/application/signup/members/9tJsXDG7_iSSi1Q)
+[![docs](https://img.shields.io/badge/-Docs-blue)](https://github.com/IBM/nodejs-idb-pconnector/blob/master/docs/README.md)
+
 # **idb-pconnector - Promise-based DB2 Connector for IBM i** <!-- omit in toc -->
 
 **Project Status**: (production ready as a "technology preview")
