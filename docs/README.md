@@ -15,6 +15,7 @@
   - [**Connection.setLibraryList(list)**](#connectionsetlibrarylistlist)
 - [**Class: Statement**](#class-statement)
   - [**Constructor: Statement(connection)**](#constructor-statementconnection)
+  - [**Statement.bindParameters(params)**](#statementbindparameters)
   - [**Statement.bindParam(params)**](#statementbindparamparams)
   - [**Statement.bind(params)**](#statementbindparams)
   - [**Statement.close()**](#statementclose)
@@ -174,6 +175,27 @@ Change to system naming and set the library list (using `CHGLIBL`) of the connec
 
 ***NOTE***: If you don't pass a `Connection Object` one will be implicitly created and will attempt to connect to `*LOCAL`.
 
+## **Statement.bindParameters(params)**
+
+Associates parameter markers in an sql statement to application variables.
+
+**Parameters**:
+
+- **params**: `Array` the parameter list in order corresponding to the parameter markers.
+
+    Each element of the parameter may be literal value of type `string`, `number`, `buffer`, `boolean`, `null`, or `object`.
+    Passing an `object` allows for parameters to be customized at an individual level.
+
+    The object format: 
+    - `value`: `String | Number | Buffer | boolean | null`
+    -  `io`: `in | out | both` default is `both`
+    -  `asClob`: `true | false` default is `false`
+
+    `value` is the only ***required*** property others will fall back to defaults if undefined.
+
+    If you want to bind a string as a clob you can add `asClob: true` property to the object.
+
+    **Example**: `{value: 'your string', asClob: true, io: 'in'}`
 
 ## **Statement.bindParam(params)**
 
