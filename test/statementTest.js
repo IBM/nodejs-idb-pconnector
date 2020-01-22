@@ -152,6 +152,40 @@ describe('Statement Class Tests', () => {
       expect(rowsAfterCount).to.equal(rowsBeforeCount + 1);
     });
 
+    it('binds an array of values by using bindParameters()', async () => {
+      const sql = 'INSERT INTO QIWS.QCUSTCDT(CUSNUM,LSTNAM,INIT,STREET,CITY,STATE,ZIPCOD,CDTLMT,CHGCOD,BALDUE,CDTDUE) VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE';
+
+      const statement = new Statement();
+      const statement2 = new Statement();
+
+      const params = [
+        9997, // CUSNUM
+        'Doe', // LASTNAME
+        'J D', // INITIAL
+        '123 Broadway', // ADDRESS
+        'Hope', // CITY
+        'WA', // STATE
+        98101, // ZIP
+        2000, // CREDIT LIMIT
+        1, // change
+        250.99, // BAL DUE
+        0.78, // CREDIT DUE
+      ];
+
+      const countResult = await statement2.exec('SELECT COUNT(CUSNUM) AS COUNT FROM QIWS.QCUSTCDT');
+
+      const rowsBeforeCount = Number.parseInt(countResult[0].COUNT, 10);
+      await statement.prepare(sql);
+      await statement.bindParameters(params);
+      await statement.execute();
+
+      const countResultAgain = await statement.exec('SELECT COUNT(CUSNUM) AS COUNT FROM QIWS.QCUSTCDT');
+
+      const rowsAfterCount = Number.parseInt(countResultAgain[0].COUNT, 10);
+
+      expect(rowsAfterCount).to.equal(rowsBeforeCount + 1);
+    });
+
     it('binds a null value, tests issue #40', async () => {
       const sql = `INSERT INTO ${schema}.SCORES(TEAM, SCORE) VALUES (?,?)`;
 
@@ -164,6 +198,18 @@ describe('Statement Class Tests', () => {
 
       await statement.prepare(sql);
       await statement.bindParam(params);
+      await statement.execute();
+    });
+
+    it('binds a null value by using bindParameters()', async () => {
+      const sql = `INSERT INTO ${schema}.SCORES(TEAM, SCORE) VALUES (?,?)`;
+
+      const statement = new Statement();
+
+      const params = ['EXAMPLE', null];
+
+      await statement.prepare(sql);
+      await statement.bindParameters(params);
       await statement.execute();
     });
   });
