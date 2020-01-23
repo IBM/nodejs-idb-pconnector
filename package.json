@@ -20,6 +20,7 @@
   "license": "MIT",
   "homepage": "https://github.com/IBM/nodejs-idb-pconnector#readme",
   "dependencies": {
+    "depd": "^2.0.0",
     "idb-connector": "^1.2.2"
   },
   "devDependencies": {
