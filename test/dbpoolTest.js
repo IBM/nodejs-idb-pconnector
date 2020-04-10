@@ -12,6 +12,7 @@ const idbp = require('../lib/idb-pconnector');
 
 const { DBPool } = idbp;
 const DBPoolConnection = require('../lib/dbPoolConnection');
+const Connection = require('../lib/connection');
 
 describe('DBPool Class Tests', () => {
   describe('createConnection', async () => {
@@ -116,7 +117,7 @@ describe('DBPool Class Tests', () => {
   describe('retireAll', async () => {
     it('removes all connections from the pool', async () => {
       const pool = new DBPool({ url: '*LOCAL' });
-
+      pool.attach();
       expect(pool.connections.length).to.equal(8);
 
       await pool.retireAll();
@@ -215,5 +216,16 @@ describe('DBPool Class Tests', () => {
           throw error;
         });
       });
+  });
+  describe('new connection event', () => {
+    it('executes a callback when new connection event occurs', (done) => {
+      const pool = new DBPool({ url: '*LOCAL' });
+      // register the listener
+      pool.on('new connection', (connection) => {
+        expect(connection).to.be.instanceof(Connection);
+        done();
+      });
+      pool.createConnection();
+    });
   });
 });
