@@ -72,27 +72,11 @@ const {
 
 async function pbeExample() {
   const connection = new Connection({ url: '*LOCAL' });
-
   const statement = new Statement(connection);
-
-  const sql = 'INSERT INTO QIWS.QCUSTCDT VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE';
+  const sql = 'INSERT INTO US_STATES(id, name, abbr, region) VALUES (?,?,?,?)';
 
   await statement.prepare(sql);
-
-  await statement.bindParam([
-    [9997, IN, NUMERIC],
-    ['Johnson', IN, CHAR],
-    ['A J', IN, CHAR],
-    ['453 Example', IN, CHAR],
-    ['Fort', IN, CHAR],
-    ['TN', IN, CHAR],
-    [37211, IN, NUMERIC],
-    [1000, IN, NUMERIC],
-    [1, IN, NUMERIC],
-    [150, IN, NUMERIC],
-    [0.00, IN, NUMERIC],
-  ]);
-
+  await statement.bindParameters([1, 'Alabama', 'AL' ,'south']);
   await statement.execute();
 }
 

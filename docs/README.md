@@ -17,6 +17,7 @@
   - [**Constructor: Statement(connection)**](#constructor-statementconnection)
   - [**Statement.bindParam(params)**](#statementbindparamparams)
   - [**Statement.bind(params)**](#statementbindparams)
+  - [**Statement.bindParameters(params)**](#statementbindparametersparams)
   - [**Statement.close()**](#statementclose)
   - [**Statement.closeCursor()**](#statementclosecursor)
   - [**Statement.commit()**](#statementcommit)
@@ -177,6 +178,8 @@ Change to system naming and set the library list (using `CHGLIBL`) of the connec
 
 ## **Statement.bindParam(params)**
 
+**Deprecated:** use [Statement.bindParameters(params)](#statementbindparametersparams) instead.
+
 Associates parameter markers in an sql statement to application variables.
 
 **Parameters**:
@@ -208,11 +211,21 @@ You can access the constants like so : `idbp.IN`
 
 **Returns**: `Promise` when resolved there is no return value but if an error occurred the promise will be rejected.
 
-**Example**: [Here](https://github.com/ibm/nodejs-idb-pconnector#prepare-bind-execute)
-
 ## **Statement.bind(params)**
 
 Shorthand equivalent of `bindParam(params)` above.
+
+## **Statement.bindParameters(params)**
+
+Associates parameter markers in an sql statement to application variables.
+
+**Parameters**:
+
+- **params**: `Array` the parameter list of values to bind. The values are ordered based on the parameter markers in the sql statement.
+
+**Returns**: `Promise` when resolved there is no return value but if an error occurred the promise will be rejected.
+
+**Example**: [Here](https://github.com/ibm/nodejs-idb-pconnector#prepare-bind-execute)
 
 
 ## **Statement.close()**

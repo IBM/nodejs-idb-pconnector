@@ -168,6 +168,44 @@ describe('Statement Class Tests', () => {
     });
   });
 
+  describe('bindParameters', () => {
+    before('create table for test', async () => {
+      const pool = new DBPool({ url: '*LOCAL' }, { incrementSize: 2 });
+      const createTable = `CREATE TABLE ${schema}.SCORES(team VARCHAR(100) ALLOCATE(20), score INTEGER)`;
+      const findTable = `SELECT OBJLONGNAME FROM TABLE (QSYS2.OBJECT_STATISTICS('${schema}', '*FILE')) AS X WHERE OBJLONGNAME = 'SCORES'`;
+
+      const tableResult = await pool.runSql(findTable);
+
+      if (!tableResult.length) {
+        await pool.runSql(createTable).catch((error) => {
+          // eslint-disable-next-line no-console
+          console.log('Unable to create SCORES table');
+          throw error;
+        });
+        // eslint-disable-next-line no-console
+        console.log('before hook: CREATED SCORES TABLE');
+      }
+    });
+
+    it('binds an array of values', async () => {
+      const sql = `INSERT INTO ${schema}.SCORES(TEAM, SCORE) VALUES (?,?)`;
+
+      const statement = new Statement();
+      await statement.prepare(sql);
+      await statement.bindParameters(['Rockets', 105]);
+      await statement.execute();
+    });
+
+    it('binds a null value, tests issue #40', async () => {
+      const sql = `INSERT INTO ${schema}.SCORES(TEAM, SCORE) VALUES (?,?)`;
+
+      const statement = new Statement();
+      await statement.prepare(sql);
+      await statement.bindParameters(['Bulls', null]);
+      await statement.execute();
+    });
+  });
+
   describe('close', () => {
     it('frees the statement object. ', async () => {
       const statement = new Statement();
