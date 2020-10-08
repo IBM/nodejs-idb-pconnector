@@ -126,7 +126,7 @@ async function pbeExample() {
   
   console.log(resultSet) // array with response
   
-}
+};
 
 pbeExample().catch((error) => {
   console.error(error);
