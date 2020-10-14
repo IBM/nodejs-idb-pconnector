@@ -20,6 +20,8 @@ The `DBPool` class includes integrated aggregates (runSql and prepareExecute) to
 - [**Examples**](#examples)
     - [exec](#exec)
     - [prepare bind execute](#prepare-bind-execute)
+      - [insert example](#insert-example)
+      - [select example](#select-example)
     - [DBPool](#dbpool)
     - [prepareExecute](#prepareexecute)
     - [runSql](#runsql)
@@ -62,6 +64,7 @@ execExample().catch((error) => {
 ### prepare bind execute
 Using `prepare`, `bind`, and `execute` methods to insert data:
 
+#### insert example
 ```javascript
 const {
   Connection, Statement, IN, NUMERIC, CHAR,
@@ -98,6 +101,41 @@ pbeExample().catch((error) => {
 });
 
 ```
+
+#### select example
+```javascript
+const {
+  Connection, Statement, IN, CHAR,
+} = require('idb-pconnector');
+
+async function pbeExample() {
+  const connection = new Connection({ url: '*LOCAL' });
+
+  const statement = new Statement(connection);
+
+  const sql = 'SELECT * FROM QIWS.QCUSTCDT WHERE CITY = ? AND STATE = ?';
+
+  await statement.prepare(sql);
+
+  await statement.bindParam([
+    ['Dallas', IN, CHAR],
+    ['TX', IN, CHAR],
+  ]);
+
+  await statement.execute();
+  
+  let resultSet = await statement.fetchAll();
+  
+  console.log(resultSet) // array with response
+  
+}
+
+pbeExample().catch((error) => {
+  console.error(error);
+});
+
+```
+
 ### DBPool
 
 Using `DBPool` to return a connection then call a stored procedure:
