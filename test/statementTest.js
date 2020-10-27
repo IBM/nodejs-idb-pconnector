@@ -28,7 +28,7 @@ describe('Statement Class Tests', () => {
       await statement.exec(`CREATE SCHEMA ${schema}`);
     }
 
-    await statement.exec(`CREATE OR REPLACE TABLE ${schema}.${table}(team VARCHAR(100) ALLOCATE(20), score INTEGER);`);
+    await statement.exec(`CREATE OR REPLACE TABLE ${schema}.${table}(team VARCHAR(100), score INTEGER);`);
   });
 
   describe('constructor with connection parameter', () => {
