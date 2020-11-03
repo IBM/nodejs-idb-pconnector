@@ -100,24 +100,6 @@ describe('Statement Class Tests', () => {
   });
 
   describe('bindParams', () => {
-    before('create table for test', async () => {
-      const pool = new DBPool({ url: '*LOCAL' }, { incrementSize: 2 });
-      const createTable = `CREATE TABLE ${schema}.SCORES(team VARCHAR(100) ALLOCATE(20), score INTEGER)`;
-      const findTable = `SELECT OBJLONGNAME FROM TABLE (QSYS2.OBJECT_STATISTICS('${schema}', '*FILE')) AS X WHERE OBJLONGNAME = 'SCORES'`;
-
-      const tableResult = await pool.runSql(findTable);
-
-      if (!tableResult.length) {
-        await pool.runSql(createTable).catch((error) => {
-          // eslint-disable-next-line no-console
-          console.log('Unable to create SCORES table');
-          throw error;
-        });
-        // eslint-disable-next-line no-console
-        console.log('before hook: CREATED SCORES TABLE');
-      }
-    });
-
     it('associate parameter markers in an SQL to app variables', async () => {
       const sql = 'INSERT INTO QIWS.QCUSTCDT(CUSNUM,LSTNAM,INIT,STREET,CITY,STATE,ZIPCOD,CDTLMT,CHGCOD,BALDUE,CDTDUE) VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE';
 
@@ -169,24 +151,6 @@ describe('Statement Class Tests', () => {
   });
 
   describe('bindParameters', () => {
-    before('create table for test', async () => {
-      const pool = new DBPool({ url: '*LOCAL' }, { incrementSize: 2 });
-      const createTable = `CREATE TABLE ${schema}.SCORES(team VARCHAR(100) ALLOCATE(20), score INTEGER)`;
-      const findTable = `SELECT OBJLONGNAME FROM TABLE (QSYS2.OBJECT_STATISTICS('${schema}', '*FILE')) AS X WHERE OBJLONGNAME = 'SCORES'`;
-
-      const tableResult = await pool.runSql(findTable);
-
-      if (!tableResult.length) {
-        await pool.runSql(createTable).catch((error) => {
-          // eslint-disable-next-line no-console
-          console.log('Unable to create SCORES table');
-          throw error;
-        });
-        // eslint-disable-next-line no-console
-        console.log('before hook: CREATED SCORES TABLE');
-      }
-    });
-
     it('binds an array of values', async () => {
       const sql = `INSERT INTO ${schema}.SCORES(TEAM, SCORE) VALUES (?,?)`;
 
