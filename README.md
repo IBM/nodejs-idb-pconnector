@@ -94,24 +94,16 @@ const {
 
 async function pbeExample() {
   const connection = new Connection({ url: '*LOCAL' });
-
   const statement = new Statement(connection);
-
   const sql = 'SELECT * FROM QIWS.QCUSTCDT WHERE CITY = ? AND STATE = ?';
 
   await statement.prepare(sql);
-
-  await statement.bindParam([
-    ['Dallas', IN, CHAR],
-    ['TX', IN, CHAR],
-  ]);
-
+  await statement.bindParameters(['Dallas','TX']);
   await statement.execute();
   
   let resultSet = await statement.fetchAll();
   
   console.log(resultSet) // array with response
-  
 }
 
 pbeExample().catch((error) => {
