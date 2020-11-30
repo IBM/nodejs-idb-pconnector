@@ -16,12 +16,14 @@ const schema = 'IDBPTEST';
 const table = 'SCORES';
 const procedure = 'MAXBAL';
 
+
 describe('Statement Class Tests', () => {
-  before('setup schema for tests', async () => {
+  before('setup schema for tests', async function () {
+    this.timeout(0);
     const connection = new Connection({ url: '*LOCAL' });
     const statement = connection.getStatement();
 
-    const schemaResult = await statement.exec(`SELECT SCHEMA_NAME FROM qsys2.sysschemas WHERE SCHEMA_NAME = '${schema}'`);
+    const schemaResult = await statement.exec(`SELECT SCHEMA_NAME FROM QSYS2.sysschemas WHERE SCHEMA_NAME = '${schema}'`);
     await statement.closeCursor();
 
     if (!schemaResult.length) {
@@ -29,6 +31,26 @@ describe('Statement Class Tests', () => {
     }
 
     await statement.exec(`CREATE OR REPLACE TABLE ${schema}.${table}(team VARCHAR(100), score INTEGER);`);
+    await statement.exec(`CREATE OR REPLACE PROCEDURE ${schema}.${procedure} (OUT OUTPUT DECIMAL(6,2))
+                          BEGIN
+                          DECLARE MAXBAL NUMERIC ( 6 , 2 ) ;
+                          SELECT MAX ( BALDUE ) INTO ${procedure} FROM QIWS.QCUSTCDT;
+                          SET OUTPUT = MAXBAL;
+                          END`
+                        );
+    await statement.close();
+    await connection.close();
+  });
+
+  after('drop objects after the tests', async function () {
+    this.timeout(0);
+    const connection = new Connection({ url: '*LOCAL' });
+    const statement = connection.getStatement();
+
+    await statement.exec(`DROP TABLE ${schema}.${table}`);
+    await statement.exec(`DROP PROCEDURE ${schema}.${procedure}`);
+    await statement.close();
+    await connection.close();
   });
 
   describe('constructor with connection parameter', () => {
@@ -218,21 +240,6 @@ describe('Statement Class Tests', () => {
   });
 
   describe('execute', () => {
-    before('create stored procedure for test', async () => {
-      const connection = new Connection({ url: '*LOCAL' });
-      const statement = new Statement(connection);
-      const createSP = `CREATE OR REPLACE PROCEDURE ${schema}.${procedure} (OUT OUTPUT DECIMAL(6,2))
-                        BEGIN
-                        DECLARE MAXBAL NUMERIC ( 6 , 2 ) ;
-                        SELECT MAX ( BALDUE ) INTO ${procedure} FROM QIWS.QCUSTCDT;
-                        SET OUTPUT = MAXBAL;
-                        END`;
-      await statement.exec(createSP);
-      await statement.close();
-      await connection.disconn();
-      await connection.close();
-    });
-
     it('executes a stored procedure and returns output parameter', async () => {
       const connection = new Connection({ url: '*LOCAL' });
 
