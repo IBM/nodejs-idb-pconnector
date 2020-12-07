@@ -19,7 +19,7 @@ const procedure = 'MAXBAL';
 
 describe('Statement Class Tests', () => {
   before('setup schema for tests', async function () {
-    this.timeout(0);
+    this.timeout(0); // disbale timeout for hook
     const connection = new Connection({ url: '*LOCAL' });
     const statement = connection.getStatement();
 
@@ -43,7 +43,7 @@ describe('Statement Class Tests', () => {
   });
 
   after('drop objects after the tests', async function () {
-    this.timeout(0);
+    this.timeout(0); // disbale timeout for hook
     const connection = new Connection({ url: '*LOCAL' });
     const statement = connection.getStatement();
 
