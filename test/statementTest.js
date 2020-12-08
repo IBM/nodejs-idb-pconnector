@@ -120,16 +120,6 @@ describe('Statement Class Tests', () => {
   });
 
   describe('bindParams', () => {
-    afterEach(async () => {
-      // runs after all tests in this block
-      const connection = new Connection({ url: '*LOCAL' });
-      const statement = connection.getStatement();
-      await statement.exec(`DELETE FROM ${schema}.${table}`);
-      await statement.close();
-      await connection.disconn();
-      await connection.close();
-    });
-
     it('associate parameter markers in an SQL to app variables', async () => {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
@@ -167,6 +157,26 @@ describe('Statement Class Tests', () => {
       await statement.close();
       await connection.disconn();
       await connection.close();
+    });
+  });
+
+  describe('bindParameters', () => {
+    it('binds an array of values', async () => {
+      const sql = `INSERT INTO ${schema}.SCORES(TEAM, SCORE) VALUES (?,?)`;
+
+      const statement = new Statement();
+      await statement.prepare(sql);
+      await statement.bindParameters(['Rockets', 105]);
+      await statement.execute();
+    });
+
+    it('binds a null value, tests issue #40', async () => {
+      const sql = `INSERT INTO ${schema}.SCORES(TEAM, SCORE) VALUES (?,?)`;
+
+      const statement = new Statement();
+      await statement.prepare(sql);
+      await statement.bindParameters(['Bulls', null]);
+      await statement.execute();
     });
   });
 
