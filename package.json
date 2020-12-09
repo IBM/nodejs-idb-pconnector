@@ -29,6 +29,6 @@
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
     "mocha": "^6.2.0",
-    "standard-version": "^7.1.0"
+    "standard-version": "^9.0.0"
   }
 }
