@@ -1,0 +1,16 @@
+name: eslint
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  eslint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      # only install dev-deps, idb-connector only installs on IBM i
+      - run: npm install --only=dev
+      - run: npm run lint
