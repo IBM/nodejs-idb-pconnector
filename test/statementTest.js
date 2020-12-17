@@ -17,7 +17,7 @@ const table = 'SCORES';
 const procedure = 'MAXBAL';
 
 
-describe('Statement Class Tests', () => {
+describe('Statement Class Tests', function () {
   before('setup schema for tests', async function () {
     this.timeout(0); // disbale timeout for hook
     const connection = new Connection({ url: '*LOCAL' });
@@ -36,8 +36,7 @@ describe('Statement Class Tests', () => {
                           DECLARE MAXBAL NUMERIC ( 6 , 2 ) ;
                           SELECT MAX ( BALDUE ) INTO ${procedure} FROM QIWS.QCUSTCDT;
                           SET OUTPUT = MAXBAL;
-                          END`
-                        );
+                          END`);
     await statement.close();
     await connection.close();
   });
@@ -53,8 +52,8 @@ describe('Statement Class Tests', () => {
     await connection.close();
   });
 
-  describe('constructor with connection parameter', () => {
-    it('creates a new Statement object by passing a connection object', async () => {
+  describe('constructor with connection parameter', function () {
+    it('creates a new Statement object by passing a connection object', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = new Statement(connection);
 
@@ -81,9 +80,9 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('constructor without connection parameter', () => {
+  describe('constructor without connection parameter', function () {
     it('creates a new Statement object with implicit connection object connected to *LOCAL',
-      async () => {
+      async function () {
         const statement = new Statement();
 
         const results = await statement.exec('SELECT * FROM QIWS.QCUSTCDT');
@@ -109,8 +108,8 @@ describe('Statement Class Tests', () => {
       });
   });
 
-  describe('prepare', () => {
-    it('prepares an sql statement', async () => {
+  describe('prepare', function () {
+    it('prepares an sql statement', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
 
@@ -119,8 +118,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('bindParams', () => {
-    it('associate parameter markers in an SQL to app variables', async () => {
+  describe('bindParams', function () {
+    it('associate parameter markers in an SQL to app variables', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
 
@@ -142,7 +141,7 @@ describe('Statement Class Tests', () => {
       await connection.close();
     });
 
-    it('binds a null value, tests issue #40', async () => {
+    it('binds a null value, tests issue #40', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
 
@@ -160,8 +159,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('bindParameters', () => {
-    it('binds an array of values', async () => {
+  describe('bindParameters', function () {
+    it('binds an array of values', async function () {
       const sql = `INSERT INTO ${schema}.SCORES(TEAM, SCORE) VALUES (?,?)`;
 
       const statement = new Statement();
@@ -170,7 +169,7 @@ describe('Statement Class Tests', () => {
       await statement.execute();
     });
 
-    it('binds a null value, tests issue #40', async () => {
+    it('binds a null value, tests issue #40', async function () {
       const sql = `INSERT INTO ${schema}.SCORES(TEAM, SCORE) VALUES (?,?)`;
 
       const statement = new Statement();
@@ -180,8 +179,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('close', () => {
-    it('frees the statement object. ', async () => {
+  describe('close', function () {
+    it('frees the statement object. ', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
 
@@ -194,8 +193,8 @@ describe('Statement Class Tests', () => {
   });
 
   // TODO: Ensure This a correct test for how closeCursor() may be used.
-  describe('closeCursor', () => {
-    it('discards any pending results', async () => {
+  describe('closeCursor', function () {
+    it('discards any pending results', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
 
@@ -208,17 +207,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('commit', () => {
-    after(async () => {
-      // runs after all tests in this block
-      const connection = new Connection({ url: '*LOCAL' });
-      const statement = connection.getStatement();
-      await statement.exec(`DELETE FROM ${schema}.${table}`);
-      await statement.close();
-      await connection.disconn();
-      await connection.close();
-    });
-    it('adds changes to the database', async () => {
+  describe('commit', function () {
+    it('adds changes to the database', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
       const params = [
@@ -237,8 +227,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('exec', () => {
-    it('directly executes a given SQL String', async () => {
+  describe('exec', function () {
+    it('directly executes a given SQL String', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
 
@@ -249,8 +239,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('execute', () => {
-    it('executes a stored procedure and returns output parameter', async () => {
+  describe('execute', function () {
+    it('executes a stored procedure and returns output parameter', async function () {
       const connection = new Connection({ url: '*LOCAL' });
 
       const statement = connection.getStatement();
@@ -268,8 +258,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('fetchAll', () => {
-    it('fetches All rows from the result set', async () => {
+  describe('fetchAll', function () {
+    it('fetches All rows from the result set', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
 
@@ -301,8 +291,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('fetch', () => {
-    it('fetches one row from the result set', async () => {
+  describe('fetch', function () {
+    it('fetches one row from the result set', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
 
@@ -329,8 +319,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('numFields', () => {
-    it('returns number of fields contained in result', async () => {
+  describe('numFields', function () {
+    it('returns number of fields contained in result', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
 
@@ -344,17 +334,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('numRows', () => {
-    after(async () => {
-      // runs after all tests in this block
-      const connection = new Connection({ url: '*LOCAL' });
-      const statement = connection.getStatement();
-      await statement.exec(`DELETE FROM ${schema}.${table}`);
-      await statement.close();
-      await connection.disconn();
-      await connection.close();
-    });
-    it('returns number of rows that were effected by a query', async () => {
+  describe('numRows', function () {
+    it('returns number of rows that were effected by a query', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
       const params = [
@@ -373,8 +354,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('fieldType', () => {
-    it('returns the data type of the indicated column', async () => {
+  describe('fieldType', function () {
+    it('returns the data type of the indicated column', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
 
@@ -389,8 +370,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('fieldWidth', () => {
-    it('returns the field width of the indicated column', async () => {
+  describe('fieldWidth', function () {
+    it('returns the field width of the indicated column', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
 
@@ -404,8 +385,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('fieldNullable', () => {
-    it('returns t/f if the indicated column is nullable', async () => {
+  describe('fieldNullable', function () {
+    it('returns t/f if the indicated column is nullable', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
 
@@ -419,8 +400,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('fieldName', () => {
-    it('returns name of the indicated column ', async () => {
+  describe('fieldName', function () {
+    it('returns name of the indicated column ', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
 
@@ -434,8 +415,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('fieldPrecise', () => {
-    it('returns the precision of the indicated column', async () => {
+  describe('fieldPrecise', function () {
+    it('returns the precision of the indicated column', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
 
@@ -451,8 +432,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('fieldScale', () => {
-    it('returns the scale of the indicated column', async () => {
+  describe('fieldScale', function () {
+    it('returns the scale of the indicated column', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
 
@@ -467,8 +448,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('setStmtAttr', () => {
-    it('sets the value of a specified statement attribute', async () => {
+  describe('setStmtAttr', function () {
+    it('sets the value of a specified statement attribute', async function () {
       const attr = SQL_ATTR_FOR_FETCH_ONLY;
       const value = 1;
 
@@ -483,8 +464,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('getStmtAttr', () => {
-    it('returns the value of specified attribute', async () => {
+  describe('getStmtAttr', function () {
+    it('returns the value of specified attribute', async function () {
       const attr = SQL_ATTR_FOR_FETCH_ONLY;
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
@@ -498,8 +479,8 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('rollback', () => {
-    it('rollback changes made on the connection', async () => {
+  describe('rollback', function () {
+    it('rollback changes made on the connection', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
 
@@ -514,14 +495,14 @@ describe('Statement Class Tests', () => {
     });
   });
 
-  describe('enableNumericTypeConversion', () => {
-    it('should default to false', async () => {
+  describe('enableNumericTypeConversion', function () {
+    it('should default to false', async function () {
       const connection = new Connection({ url: '*LOCAL' });
       const statement = connection.getStatement();
       expect(statement.enableNumericTypeConversion()).to.equal(false);
     });
 
-    it('should return numeric data as strings when false', async () => {
+    it('should return numeric data as strings when false', async function () {
       const sql = `select cast(-32768 as SMALLINT) MIN_SMALLINT,
       cast(+32767 as SMALLINT) MAX_SMALLINT
       from sysibm.sysdummy1`;
@@ -537,7 +518,7 @@ describe('Statement Class Tests', () => {
       expect(result).to.eql([{ MIN_SMALLINT: '-32768', MAX_SMALLINT: '32767' }]);
     });
 
-    it('should return numeric data as Number when safe to do so', async () => {
+    it('should return numeric data as Number when safe to do so', async function () {
       const sql = `select 
         cast(-32768 as SMALLINT) MIN_SMALLINT,
         cast(+32767 as SMALLINT) MAX_SMALLINT,
@@ -575,16 +556,16 @@ describe('Statement Class Tests', () => {
   });
 
   // TODO
-  describe.skip('stmtError', () => {
-    it('Returns the diagnostic information ', async () => {
+  // describe.skip('stmtError', function () {
+  //   it('Returns the diagnostic information ', async function () {
 
-    });
-  });
+  //   });
+  // });
 
   // TODO
-  describe.skip('nextResult', () => {
-    it('Determines whether there is another result set', async () => {
+  // describe.skip('nextResult', function () {
+  //   it('Determines whether there is another result set', async function () {
 
-    });
-  });
+  //   });
+  // });
 });

@@ -13,9 +13,9 @@ const idbp = require('../lib/idb-pconnector');
 const { DBPool } = idbp;
 const DBPoolConnection = require('../lib/dbPoolConnection');
 
-describe('DBPool Class Tests', () => {
-  describe('createConnection', async () => {
-    it('creates a new instance of DBConnection with an index and appends it to the pool', async () => {
+describe('DBPool Class Tests', function () {
+  describe('createConnection', function () {
+    it('creates a new instance of DBConnection with an index and appends it to the pool', async function () {
       const pool = new DBPool({ url: '*LOCAL' });
 
       const lenBefore = pool.connections.length;
@@ -26,8 +26,8 @@ describe('DBPool Class Tests', () => {
     });
   });
 
-  describe('attach', async () => {
-    it('finds an available connection and returns it', async () => {
+  describe('attach', function () {
+    it('finds an available connection and returns it', async function () {
       const pool = new DBPool({ url: '*LOCAL' });
 
       const conn = await pool.attach();
@@ -42,8 +42,8 @@ describe('DBPool Class Tests', () => {
   });
 
   // could give assertion error (red herring?) , see detach test in manualTest.js
-  describe('detach', async () => {
-    it('resets connection to be used again', async () => {
+  describe('detach', function () {
+    it('resets connection to be used again', async function () {
       const pool = new DBPool({ url: '*LOCAL' });
       // get the conn
       const conn = pool.attach();
@@ -65,8 +65,8 @@ describe('DBPool Class Tests', () => {
     });
   });
 
-  describe('detachAll', async () => {
-    it('returns all connections back to available', async () => {
+  describe('detachAll', function () {
+    it('returns all connections back to available', async function () {
       const pool = new DBPool({ url: '*LOCAL' });
 
       const { connections } = pool;
@@ -95,8 +95,8 @@ describe('DBPool Class Tests', () => {
     });
   });
 
-  describe('retire', async () => {
-    it('removes a connection from the pool', async () => {
+  describe('retire', function () {
+    it('removes a connection from the pool', async function () {
       const pool = new DBPool({ url: '*LOCAL' });
       const { connections } = pool;
       const conn = pool.attach();
@@ -113,8 +113,8 @@ describe('DBPool Class Tests', () => {
     });
   });
 
-  describe('retireAll', async () => {
-    it('removes all connections from the pool', async () => {
+  describe('retireAll', function () {
+    it('removes all connections from the pool', async function () {
       const pool = new DBPool({ url: '*LOCAL' });
 
       expect(pool.connections.length).to.equal(8);
@@ -125,8 +125,8 @@ describe('DBPool Class Tests', () => {
     });
   });
 
-  describe('runSql', async () => {
-    it('executes SELECT statment and returns result set', async () => {
+  describe('runSql', function () {
+    it('executes SELECT statment and returns result set', async function () {
       const pool = new DBPool({ url: '*LOCAL' });
 
       const results = await pool.runSql('SELECT * FROM QIWS.QCUSTCDT');
@@ -134,7 +134,7 @@ describe('DBPool Class Tests', () => {
       expect(results.length).to.be.gt(0);
     });
 
-    it('executes INSERT statement and returns null', async () => {
+    it('executes INSERT statement and returns null', async function () {
       const pool = new DBPool({ url: '*LOCAL' });
 
       // eslint-disable-next-line quotes
@@ -145,9 +145,9 @@ describe('DBPool Class Tests', () => {
     });
   });
 
-  describe('prepareExecute', async () => {
+  describe('prepareExecute', function () {
     it('prepares, binds, and executes statement, returns output params & result set',
-      async () => {
+      async function () {
         const pool = new DBPool({ url: '*LOCAL' });
 
         const cusNum = 938472;
@@ -162,7 +162,7 @@ describe('DBPool Class Tests', () => {
       });
 
     it('prepares, binds, and executes statement returns null (no output or result set)',
-      async () => {
+      async function () {
         const pool = new DBPool({ url: '*LOCAL' });
 
         const sql = 'INSERT INTO QIWS.QCUSTCDT VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE';
@@ -187,7 +187,7 @@ describe('DBPool Class Tests', () => {
       });
 
     it('prepares and executes INSERT returns result set only',
-      async () => {
+      async function () {
         const pool = new DBPool({ url: '*LOCAL' });
 
         const sql = 'SELECT * FROM QIWS.QCUSTCDT';
@@ -200,9 +200,9 @@ describe('DBPool Class Tests', () => {
       });
   });
 
-  describe('setConnectionAttribute', async () => {
+  describe('setConnectionAttribute', function () {
     it('sets connection attribute for all connections in the pool.',
-      async () => {
+      async function () {
         const db = { url: '*LOCAL' };
 
         const attribute = { attribute: idbp.SQL_ATTR_DBC_SYS_NAMING, value: idbp.SQL_FALSE };

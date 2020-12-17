@@ -10,15 +10,15 @@
 const { expect } = require('chai');
 const { Connection } = require('../lib/idb-pconnector');
 
-describe('Connection Class Tests', () => {
-  describe('constructor', () => {
-    it('creates Connection object and connects to *LOCAL as current user', async () => {
+describe('Connection Class Tests', function () {
+  describe('constructor', function () {
+    it('creates Connection object and connects to *LOCAL as current user', async function () {
       const dbConn = new Connection({ url: '*LOCAL' });
 
       expect(dbConn.isConnected()).to.equal(true);
     });
 
-    it('creates Connection object and connects to specified db as specified user', async () => {
+    it('creates Connection object and connects to specified db as specified user', async function () {
       if (!process.env.DBUSER || !process.env.DBPASS) {
         throw new Error('Must specify DBUSER DBPASS environment variables');
       }
@@ -32,8 +32,8 @@ describe('Connection Class Tests', () => {
     });
   });
 
-  describe('connect', () => {
-    it('connects to *LOCAL when no params passed', async () => {
+  describe('connect', function () {
+    it('connects to *LOCAL when no params passed', async function () {
       const dbConn = new Connection();
 
       const connReturned = dbConn.connect();
@@ -42,7 +42,7 @@ describe('Connection Class Tests', () => {
       expect(connReturned.dbconn).to.be.a('dbconn');
     });
 
-    it('connects with passed db, user, password params', async () => {
+    it('connects with passed db, user, password params', async function () {
       if (!process.env.DBUSER || !process.env.DBPASS) {
         throw new Error('Must specify DBUSER DBPASS environment variables');
       }
@@ -54,8 +54,8 @@ describe('Connection Class Tests', () => {
     });
   });
 
-  describe('getStatement', () => {
-    it('should return a new statement initialized with the the dbconn', async () => {
+  describe('getStatement', function () {
+    it('should return a new statement initialized with the the dbconn', async function () {
       const dbConn = new Connection().connect();
       const stmtReturned = dbConn.getStatement();
 
@@ -63,8 +63,8 @@ describe('Connection Class Tests', () => {
     });
   });
 
-  describe('validStmt', () => {
-    it('checks of a given sql is valid', async () => {
+  describe('validStmt', function () {
+    it('checks of a given sql is valid', async function () {
       const sql = 'SELECT * FROM QIWS.QCUSTCDT';
       const dbConn = new Connection().connect();
       const res = await dbConn.validStmt(sql);
@@ -73,8 +73,8 @@ describe('Connection Class Tests', () => {
     });
   });
 
-  describe('getConnAttr', () => {
-    it('returns the value of specified connection attribute', async () => {
+  describe('getConnAttr', function () {
+    it('returns the value of specified connection attribute', async function () {
       const attr = 0;
       const dbConn = new Connection().connect();
       const returnValue = await dbConn.getConnAttr(attr);
@@ -83,8 +83,8 @@ describe('Connection Class Tests', () => {
     });
   });
 
-  describe('setConnAttr', () => {
-    it('sets the value of specified connection attribute', async () => {
+  describe('setConnAttr', function () {
+    it('sets the value of specified connection attribute', async function () {
       const attr = 0;
       const value = 2;
       const dbConn = new Connection().connect();
@@ -94,8 +94,8 @@ describe('Connection Class Tests', () => {
     });
   });
 
-  describe('debug', () => {
-    it('prints more detailed info if choice = true', async () => {
+  describe('debug', function () {
+    it('prints more detailed info if choice = true', async function () {
       const choice = true;
       const dbConn = new Connection().connect();
       const res = await dbConn.debug(choice);
@@ -104,8 +104,8 @@ describe('Connection Class Tests', () => {
     });
   });
 
-  describe('disconn', () => {
-    it('disconnects an existing connection to the database', async () => {
+  describe('disconn', function () {
+    it('disconnects an existing connection to the database', async function () {
       const dbConn = new Connection().connect();
       const res = await dbConn.disconn();
 
@@ -113,8 +113,8 @@ describe('Connection Class Tests', () => {
     });
   });
 
-  describe('close', () => {
-    it('frees the connection object', async () => {
+  describe('close', function () {
+    it('frees the connection object', async function () {
       const dbConn = new Connection().connect();
 
       await dbConn.disconn();
@@ -125,8 +125,8 @@ describe('Connection Class Tests', () => {
     });
   });
 
-  describe('isConnected', () => {
-    it('returns true/false if Connection object is connected', async () => {
+  describe('isConnected', function () {
+    it('returns true/false if Connection object is connected', async function () {
       const dbConn = new Connection();
       const before = dbConn.isConnected();
       expect(before).to.equal(false);
@@ -144,8 +144,8 @@ describe('Connection Class Tests', () => {
     });
   });
 
-  describe('setLibraryList', () => {
-    it('sets the user portion of the library list for the current connection', async () => {
+  describe('setLibraryList', function () {
+    it('sets the user portion of the library list for the current connection', async function () {
       const dbConn = new Connection({ url: '*LOCAL' });
       const statement = dbConn.getStatement();
 
