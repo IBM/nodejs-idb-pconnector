@@ -510,6 +510,7 @@ Constructor to instantiate a new instance of a DBPool class given the `database`
 - **config**: `Object` with the properties: 
     - `incrementSize`: `Number` is an integer that sets the desired size of the `DBPool`, defaults to 8 connections.
     - `debug`: `boolean` setting it to true will display verbose output to the console, defaults to false.
+    - `enableNumericTypeConversion`: `boolean`  Enabling this option will convert numerics within the result set returned from [runSql](#dbpoolrunsqlsql) and [prepareExecute](#dbpoolprepareexecutesql-params-options) calls as JS Numbers instead of strings when it is safe to do so. This option defaults to false.
 
 **Example**: [Here](https://github.com/ibm/nodejs-idb-pconnector#dbpool)
 
