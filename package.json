@@ -21,13 +21,14 @@
   "homepage": "https://github.com/IBM/nodejs-idb-pconnector#readme",
   "dependencies": {
     "depd": "^2.0.0",
-    "idb-connector": "^1.2.2"
+    "idb-connector": "^1.2.8"
   },
   "devDependencies": {
     "chai": "^4.2.0",
     "eslint": "^6.3.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
-    "mocha": "^6.2.0"
+    "mocha": "^6.2.0",
+    "standard-version": "^9.0.0"
   }
 }

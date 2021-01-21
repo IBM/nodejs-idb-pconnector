@@ -17,6 +17,7 @@
   - [**Constructor: Statement(connection)**](#constructor-statementconnection)
   - [**Statement.bindParam(params)**](#statementbindparamparams)
   - [**Statement.bind(params)**](#statementbindparams)
+  - [**Statement.bindParameters(params)**](#statementbindparametersparams)
   - [**Statement.close()**](#statementclose)
   - [**Statement.closeCursor()**](#statementclosecursor)
   - [**Statement.commit()**](#statementcommit)
@@ -177,6 +178,8 @@ Change to system naming and set the library list (using `CHGLIBL`) of the connec
 
 ## **Statement.bindParam(params)**
 
+**Deprecated:** use [Statement.bindParameters(params)](#statementbindparametersparams) instead.
+
 Associates parameter markers in an sql statement to application variables.
 
 **Parameters**:
@@ -208,11 +211,21 @@ You can access the constants like so : `idbp.IN`
 
 **Returns**: `Promise` when resolved there is no return value but if an error occurred the promise will be rejected.
 
-**Example**: [Here](https://github.com/ibm/nodejs-idb-pconnector#prepare-bind-execute)
-
 ## **Statement.bind(params)**
 
 Shorthand equivalent of `bindParam(params)` above.
+
+## **Statement.bindParameters(params)**
+
+Associates parameter markers in an sql statement to application variables.
+
+**Parameters**:
+
+- **params**: `Array` the parameter list of values to bind. The values are ordered based on the parameter markers in the sql statement.
+
+**Returns**: `Promise` when resolved there is no return value but if an error occurred the promise will be rejected.
+
+**Example**: [Here](https://github.com/ibm/nodejs-idb-pconnector#prepare-bind-execute)
 
 
 ## **Statement.close()**
@@ -497,6 +510,7 @@ Constructor to instantiate a new instance of a DBPool class given the `database`
 - **config**: `Object` with the properties: 
     - `incrementSize`: `Number` is an integer that sets the desired size of the `DBPool`, defaults to 8 connections.
     - `debug`: `boolean` setting it to true will display verbose output to the console, defaults to false.
+    - `enableNumericTypeConversion`: `boolean`  Enabling this option will convert numerics within the result set returned from [runSql](#dbpoolrunsqlsql) and [prepareExecute](#dbpoolprepareexecutesql-params-options) calls as JS Numbers instead of strings when it is safe to do so. This option defaults to false.
 
 **Example**: [Here](https://github.com/ibm/nodejs-idb-pconnector#dbpool)
 

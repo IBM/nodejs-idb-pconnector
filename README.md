@@ -20,6 +20,8 @@ The `DBPool` class includes integrated aggregates (runSql and prepareExecute) to
 - [**Examples**](#examples)
     - [exec](#exec)
     - [prepare bind execute](#prepare-bind-execute)
+      - [insert example](#insert-example)
+      - [select example](#select-example)
     - [DBPool](#dbpool)
     - [prepareExecute](#prepareexecute)
     - [runSql](#runsql)
@@ -62,6 +64,7 @@ execExample().catch((error) => {
 ### prepare bind execute
 Using `prepare`, `bind`, and `execute` methods to insert data:
 
+#### insert example
 ```javascript
 const {
   Connection, Statement, IN, NUMERIC, CHAR,
@@ -69,27 +72,11 @@ const {
 
 async function pbeExample() {
   const connection = new Connection({ url: '*LOCAL' });
-
   const statement = new Statement(connection);
-
-  const sql = 'INSERT INTO QIWS.QCUSTCDT VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE';
+  const sql = 'INSERT INTO US_STATES(id, name, abbr, region) VALUES (?,?,?,?)';
 
   await statement.prepare(sql);
-
-  await statement.bindParam([
-    [9997, IN, NUMERIC],
-    ['Johnson', IN, CHAR],
-    ['A J', IN, CHAR],
-    ['453 Example', IN, CHAR],
-    ['Fort', IN, CHAR],
-    ['TN', IN, CHAR],
-    [37211, IN, NUMERIC],
-    [1000, IN, NUMERIC],
-    [1, IN, NUMERIC],
-    [150, IN, NUMERIC],
-    [0.00, IN, NUMERIC],
-  ]);
-
+  await statement.bindParameters([1, 'Alabama', 'AL' ,'south']);
   await statement.execute();
 }
 
@@ -98,6 +85,33 @@ pbeExample().catch((error) => {
 });
 
 ```
+
+#### select example
+```javascript
+const {
+  Connection, Statement, IN, CHAR,
+} = require('idb-pconnector');
+
+async function pbeExample() {
+  const connection = new Connection({ url: '*LOCAL' });
+  const statement = new Statement(connection);
+  const sql = 'SELECT * FROM QIWS.QCUSTCDT WHERE CITY = ? AND STATE = ?';
+
+  await statement.prepare(sql);
+  await statement.bindParameters(['Dallas','TX']);
+  await statement.execute();
+  
+  let resultSet = await statement.fetchAll();
+  
+  console.log(resultSet) // array with response
+}
+
+pbeExample().catch((error) => {
+  console.error(error);
+});
+
+```
+
 ### DBPool
 
 Using `DBPool` to return a connection then call a stored procedure:
