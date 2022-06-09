@@ -40,7 +40,7 @@ describe('Connection Class Tests', () => {
       const connReturned = dbConn.connect();
 
       expect(connReturned.isConnected()).to.equal(true);
-      expect(connReturned.dbconn).to.be.a.instanceOf(dbconn);
+      expect(connReturned.dbconn).to.be.a.instanceof(dbconn);
     });
 
     it('connects with passed db, user, password params', async () => {
