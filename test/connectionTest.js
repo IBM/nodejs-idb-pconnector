@@ -51,7 +51,7 @@ describe('Connection Class Tests', () => {
       const connReturned = dbConn.connect('*LOCAL', process.env.DBUSER, process.env.DBPASS);
 
       expect(connReturned.isConnected()).to.equal(true);
-      expect(connReturned.dbconn).to.be.a.instanceof('dbconn');
+      expect(connReturned.dbconn).to.be.a.instanceof(dbconn);
     });
   });
 
