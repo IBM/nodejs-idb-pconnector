@@ -19,13 +19,13 @@
 
 - refactor: Deprecate implicitly creating a connection
 
-- docs: for enableNumericTypeConversion() [#54](https://github.com/IBM/nodejs-idb-pconnector/issues/54)
+- docs: for enableNumericTypeConversion() ([#54](https://github.com/IBM/nodejs-idb-pconnector/issues/54))
 
-- test: for enableNumericTypeConversion() [#54](https://github.com/IBM/nodejs-idb-pconnector/issues/54)
+- test: for enableNumericTypeConversion() ([#54](https://github.com/IBM/nodejs-idb-pconnector/issues/54))
 
-- feat(statement.js): enableNumericTypeConversion() [#54](https://github.com/IBM/nodejs-idb-pconnector/issues/54)
+- feat(statement.js): enableNumericTypeConversion() ([#54](https://github.com/IBM/nodejs-idb-pconnector/issues/54))
 
-- docs: Add badges
+- docs: Add badges ([e74e7db](https://github.com/IBM/nodejs-idb-pconnector/commit/e74e7dbdc5cb0e912c1475ba947c362617f18eb3))
 
 # 1.0.8
 
