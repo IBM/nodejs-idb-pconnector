@@ -14,19 +14,16 @@
   - Close out open statement and connection handles in each test
 
 - docs: Add select bindParam example ([#101](https://github.com/IBM/nodejs-idb-pconnector/pull/101))
-  Signed-off-by: Jhonny <jhonnattanriverarivera@gmail.com>
 
--  fix: Add package-lock.json ([#86](https://github.com/IBM/nodejs-idb-pconnector/pull/86))
+- fix: Add package-lock.json ([#86](https://github.com/IBM/nodejs-idb-pconnector/pull/86))
 
 - refactor: Deprecate implicitly creating a connection
 
 - docs: for enableNumericTypeConversion() [#54](https://github.com/IBM/nodejs-idb-pconnector/issues/54)
 
-  Co-Authored-By: Kevin Adler <kadler@us.ibm.com>
-
 - test: for enableNumericTypeConversion() [#54](https://github.com/IBM/nodejs-idb-pconnector/issues/54)
 
--  feat(statement.js): enableNumericTypeConversion() [#54](https://github.com/IBM/nodejs-idb-pconnector/issues/54)
+- feat(statement.js): enableNumericTypeConversion() [#54](https://github.com/IBM/nodejs-idb-pconnector/issues/54)
 
 - docs: Add badges
 
