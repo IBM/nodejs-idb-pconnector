@@ -1,5 +1,32 @@
 # idb-pconnector change log
 
+# 1.1.0
+
+- feat: Add support for enableNumericTypeConversion on DBPool functions ([#97](https://github.com/IBM/nodejs-idb-pconnector/pull/97))
+
+- feat: Add support for bindParameters ([#92](https://github.com/IBM/nodejs-idb-pconnector/pull/92))
+   - bindParameters() deprecates bindParam() and bind()
+
+- refactor: Statement tests ([#78](https://github.com/IBM/nodejs-idb-pconnector/pull/78))
+  - No longer use deprecated Statement with implicitly connection
+  - No longer use QIWS.QCUSTCDT from insert tests
+  - Add after/afterEach hooks to delete data inserted by test cases
+  - Close out open statement and connection handles in each test
+
+- docs: Add select bindParam example ([#101](https://github.com/IBM/nodejs-idb-pconnector/pull/101))
+
+- fix: Add package-lock.json ([#86](https://github.com/IBM/nodejs-idb-pconnector/pull/86))
+
+- refactor: Deprecate implicitly creating a connection
+
+- docs: for enableNumericTypeConversion() ([#54](https://github.com/IBM/nodejs-idb-pconnector/issues/54))
+
+- test: for enableNumericTypeConversion() ([#54](https://github.com/IBM/nodejs-idb-pconnector/issues/54))
+
+- feat(statement.js): enableNumericTypeConversion() ([#54](https://github.com/IBM/nodejs-idb-pconnector/issues/54))
+
+- docs: Add badges ([e74e7db](https://github.com/IBM/nodejs-idb-pconnector/commit/e74e7dbdc5cb0e912c1475ba947c362617f18eb3))
+
 # 1.0.8
 
 - Allow `SQL_SUCCESS_WITH_INFO` return code to resolve the row in `fetch()` see PR [#47](https://github.com/IBM/nodejs-idb-pconnector/pull/47)
