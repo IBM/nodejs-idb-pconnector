@@ -9,6 +9,7 @@
 
 const { expect } = require('chai');
 const { Connection } = require('../lib/idb-pconnector');
+const { dbconn, dbstmt } = require('idb-connector');
 
 describe('Connection Class Tests', () => {
   describe('constructor', () => {
@@ -39,7 +40,7 @@ describe('Connection Class Tests', () => {
       const connReturned = dbConn.connect();
 
       expect(connReturned.isConnected()).to.equal(true);
-      expect(connReturned.dbconn).to.be.a('dbconn');
+      expect(connReturned.dbconn).to.be.a.instanceOf(dbconn);
     });
 
     it('connects with passed db, user, password params', async () => {
@@ -50,7 +51,7 @@ describe('Connection Class Tests', () => {
       const connReturned = dbConn.connect('*LOCAL', process.env.DBUSER, process.env.DBPASS);
 
       expect(connReturned.isConnected()).to.equal(true);
-      expect(connReturned.dbconn).to.be.a('dbconn');
+      expect(connReturned.dbconn).to.be.a.instanceof('dbconn');
     });
   });
 
@@ -59,7 +60,7 @@ describe('Connection Class Tests', () => {
       const dbConn = new Connection().connect();
       const stmtReturned = dbConn.getStatement();
 
-      expect(stmtReturned.stmt).to.be.a('dbstmt');
+      expect(stmtReturned.stmt).to.be.a.instanceof(dbstmt);
     });
   });
 
