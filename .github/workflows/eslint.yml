@@ -15,5 +15,5 @@ jobs:
         with:
           node-version: 16
       - run: rm package.json && rm package-lock.json
-      - run: npm install eslint@8.26.0 eslint-config-airbnb-base@15.0.0 eslint-plugin-import@2.26.0
+      - run: npm install eslint@8.26.0 eslint-config-airbnb-base@15.0.0 eslint-plugin-import@2.26.0 chai@4.3.6
       - run: ./node_modules/eslint/bin/eslint.js lib/ test/
