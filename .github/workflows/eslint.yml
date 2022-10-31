@@ -12,5 +12,5 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       # only install dev-deps, idb-connector only installs on IBM i
-      - run: npm install --only=dev
+      - run: npm install --only=dev --no-package-lock
       - run: npm run lint
