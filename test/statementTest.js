@@ -16,7 +16,6 @@ const schema = 'IDBPTEST';
 const table = 'SCORES';
 const procedure = 'MAXBAL';
 
-
 describe('Statement Class Tests', () => {
   before('setup schema for tests', async function () {
     this.timeout(0); // disbale timeout for hook
@@ -82,7 +81,8 @@ describe('Statement Class Tests', () => {
   });
 
   describe('constructor without connection parameter', () => {
-    it('creates a new Statement object with implicit connection object connected to *LOCAL',
+    it(
+      'creates a new Statement object with implicit connection object connected to *LOCAL',
       async () => {
         const statement = new Statement();
 
@@ -106,7 +106,8 @@ describe('Statement Class Tests', () => {
           expect(row).to.haveOwnProperty('BALDUE');
           expect(row).to.haveOwnProperty('CDTDUE');
         });
-      });
+      },
+    );
   });
 
   describe('prepare', () => {

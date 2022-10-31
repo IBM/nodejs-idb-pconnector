@@ -146,7 +146,8 @@ describe('DBPool Class Tests', () => {
   });
 
   describe('prepareExecute', async () => {
-    it('prepares, binds, and executes statement, returns output params & result set',
+    it(
+      'prepares, binds, and executes statement, returns output params & result set',
       async () => {
         const pool = new DBPool({ url: '*LOCAL' });
 
@@ -159,9 +160,11 @@ describe('DBPool Class Tests', () => {
         expect(resultSet.length).to.be.gt(0);
         expect(outputParams).to.be.an('array');
         expect(outputParams.length).to.equal(1);
-      });
+      },
+    );
 
-    it('prepares, binds, and executes statement returns null (no output or result set)',
+    it(
+      'prepares, binds, and executes statement returns null (no output or result set)',
       async () => {
         const pool = new DBPool({ url: '*LOCAL' });
 
@@ -184,9 +187,11 @@ describe('DBPool Class Tests', () => {
         const results = await pool.prepareExecute(sql, params, { io: 'in' });
 
         expect(results).to.equal(null);
-      });
+      },
+    );
 
-    it('prepares and executes INSERT returns result set only',
+    it(
+      'prepares and executes INSERT returns result set only',
       async () => {
         const pool = new DBPool({ url: '*LOCAL' });
 
@@ -197,11 +202,13 @@ describe('DBPool Class Tests', () => {
         expect(results.outputParams).to.equal(undefined);
         expect(results.resultSet).to.be.a('array');
         expect(results.resultSet.length).to.be.gt(0);
-      });
+      },
+    );
   });
 
   describe('setConnectionAttribute', async () => {
-    it('sets connection attribute for all connections in the pool.',
+    it(
+      'sets connection attribute for all connections in the pool.',
       async () => {
         const db = { url: '*LOCAL' };
 
@@ -214,7 +221,8 @@ describe('DBPool Class Tests', () => {
         await testPool.setConnectionAttribute(attribute).catch((error) => {
           throw error;
         });
-      });
+      },
+    );
   });
 
   describe('enableNumericTypeConversion', () => {
