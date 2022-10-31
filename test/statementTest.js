@@ -16,8 +16,7 @@ const schema = 'IDBPTEST';
 const table = 'SCORES';
 const procedure = 'MAXBAL';
 
-
-describe('Statement Class Tests', function () {
+describe('Statement Class Tests', () => {
   before('setup schema for tests', async function () {
     this.timeout(0); // disbale timeout for hook
     const connection = new Connection({ url: '*LOCAL' });
@@ -80,9 +79,16 @@ describe('Statement Class Tests', function () {
     });
   });
 
+<<<<<<< HEAD
   describe('constructor without connection parameter', function () {
     it('creates a new Statement object with implicit connection object connected to *LOCAL',
       async function () {
+=======
+  describe('constructor without connection parameter', () => {
+    it(
+      'creates a new Statement object with implicit connection object connected to *LOCAL',
+      async () => {
+>>>>>>> 1893664 (style: fix lint errrors)
         const statement = new Statement();
 
         const results = await statement.exec('SELECT * FROM QIWS.QCUSTCDT');
@@ -105,7 +111,8 @@ describe('Statement Class Tests', function () {
           expect(row).to.haveOwnProperty('BALDUE');
           expect(row).to.haveOwnProperty('CDTDUE');
         });
-      });
+      },
+    );
   });
 
   describe('prepare', function () {

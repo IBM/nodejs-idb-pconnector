@@ -145,9 +145,10 @@ describe('DBPool Class Tests', function () {
     });
   });
 
-  describe('prepareExecute', function () {
-    it('prepares, binds, and executes statement, returns output params & result set',
-      async function () {
+  describe('prepareExecute', async () => {
+    it(
+      'prepares, binds, and executes statement, returns output params & result set',
+      async () => {
         const pool = new DBPool({ url: '*LOCAL' });
 
         const cusNum = 938472;
@@ -159,10 +160,12 @@ describe('DBPool Class Tests', function () {
         expect(resultSet.length).to.be.gt(0);
         expect(outputParams).to.be.an('array');
         expect(outputParams.length).to.equal(1);
-      });
+      },
+    );
 
-    it('prepares, binds, and executes statement returns null (no output or result set)',
-      async function () {
+    it(
+      'prepares, binds, and executes statement returns null (no output or result set)',
+      async () => {
         const pool = new DBPool({ url: '*LOCAL' });
 
         const sql = 'INSERT INTO QIWS.QCUSTCDT VALUES (?,?,?,?,?,?,?,?,?,?,?) with NONE';
@@ -184,10 +187,12 @@ describe('DBPool Class Tests', function () {
         const results = await pool.prepareExecute(sql, params, { io: 'in' });
 
         expect(results).to.equal(null);
-      });
+      },
+    );
 
-    it('prepares and executes INSERT returns result set only',
-      async function () {
+    it(
+      'prepares and executes INSERT returns result set only',
+      async () => {
         const pool = new DBPool({ url: '*LOCAL' });
 
         const sql = 'SELECT * FROM QIWS.QCUSTCDT';
@@ -197,12 +202,14 @@ describe('DBPool Class Tests', function () {
         expect(results.outputParams).to.equal(undefined);
         expect(results.resultSet).to.be.a('array');
         expect(results.resultSet.length).to.be.gt(0);
-      });
+      },
+    );
   });
 
-  describe('setConnectionAttribute', function () {
-    it('sets connection attribute for all connections in the pool.',
-      async function () {
+  describe('setConnectionAttribute', async () => {
+    it(
+      'sets connection attribute for all connections in the pool.',
+      async () => {
         const db = { url: '*LOCAL' };
 
         const attribute = { attribute: idbp.SQL_ATTR_DBC_SYS_NAMING, value: idbp.SQL_FALSE };
@@ -214,6 +221,7 @@ describe('DBPool Class Tests', function () {
         await testPool.setConnectionAttribute(attribute).catch((error) => {
           throw error;
         });
-      });
+      },
+    );
   });
 });
