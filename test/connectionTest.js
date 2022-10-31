@@ -8,8 +8,9 @@
 /* eslint-env mocha */
 
 const { expect } = require('chai');
-const { Connection } = require('../lib/idb-pconnector');
+/* eslint-disable import/no-unresolved */
 const { dbconn, dbstmt } = require('idb-connector');
+const { Connection } = require('../lib/idb-pconnector');
 
 describe('Connection Class Tests', () => {
   describe('constructor', () => {
