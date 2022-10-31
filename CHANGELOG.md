@@ -2,12 +2,12 @@
 
 # 1.1.1
 
-- build: Update deps to latest version (#129)
-- ci: fix eslint action runner (#130)
+- build: Update deps to latest version ([#129](https://github.com/IBM/nodejs-idb-pconnector/pull/129))
+- ci: fix eslint action runner ([#130](https://github.com/IBM/nodejs-idb-pconnector/pull/130))
 - ci: Update action to use Node.js 16
 - ci: Ignore the package-lock.json during npm i
-- ci: Update action to 'released' type (#128)
-- ci: Add eslint action (#108)
+- ci: Update action to 'released' type ([#128](https://github.com/IBM/nodejs-idb-pconnector/pull/128))
+- ci: Add eslint action ([#108](https://github.com/IBM/nodejs-idb-pconnector/pull/108))
 
 # 1.1.0
 
