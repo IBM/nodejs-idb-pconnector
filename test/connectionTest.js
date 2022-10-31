@@ -10,7 +10,6 @@
 const { expect } = require('chai');
 const { dbconn, dbstmt } = require('idb-connector');
 const { Connection } = require('../lib/idb-pconnector');
-const { dbconn, dbstmt } = require('idb-connector');
 
 describe('Connection Class Tests', () => {
   describe('constructor', () => {

@@ -17,7 +17,7 @@ const table = 'SCORES';
 const procedure = 'MAXBAL';
 
 describe('Statement Class Tests', () => {
-  before('setup schema for tests', async function () {
+  before('setup schema for tests', async function a() {
     this.timeout(0); // disbale timeout for hook
     const connection = new Connection({ url: '*LOCAL' });
     const statement = connection.getStatement();
@@ -35,13 +35,12 @@ describe('Statement Class Tests', () => {
                           DECLARE MAXBAL NUMERIC ( 6 , 2 ) ;
                           SELECT MAX ( BALDUE ) INTO ${procedure} FROM QIWS.QCUSTCDT;
                           SET OUTPUT = MAXBAL;
-                          END`
-                        );
+                          END`);
     await statement.close();
     await connection.close();
   });
 
-  after('drop objects after the tests', async function () {
+  after('drop objects after the tests', async function b() {
     this.timeout(0); // disbale timeout for hook
     const connection = new Connection({ url: '*LOCAL' });
     const statement = connection.getStatement();
