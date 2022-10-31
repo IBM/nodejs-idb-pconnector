@@ -14,6 +14,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-      # only install dev-deps, idb-connector only installs on IBM i
-      - run: npm install --only=dev --no-package-lock
-      - run: npm run lint
+      - run: rm package.json && rm package-lock.json
+      - run: npm install eslint@8.26.0 eslint-config-airbnb-base@15.0.0 eslint-plugin-import@2.26.0
+      - run: ./node_modules/eslint/bin/eslint.js lib/ test/
