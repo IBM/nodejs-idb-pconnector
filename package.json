@@ -4,7 +4,8 @@
   "description": "Promise based DB2 Connector for IBM i",
   "main": "lib/idb-pconnector.js",
   "scripts": {
-    "test": "node node_modules/.bin/mocha"
+    "test": "node node_modules/.bin/mocha",
+    "lint": "./node_modules/eslint/bin/eslint.js lib/ test/"
   },
   "repository": {
     "type": "git",
