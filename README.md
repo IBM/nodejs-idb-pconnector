@@ -29,6 +29,7 @@ The `DBPool` class includes integrated aggregates (runSql and prepareExecute) to
 - [**Documentation**](#documentation)
 - [**License**](#license)
 - [**Contributing**](#contributing)
+- [**Release**](#release)
 
 
 # **Install**
@@ -233,4 +234,18 @@ Please read the [docs](https://github.com/IBM/nodejs-idb-pconnector/blob/master/
 # **Contributing**
 Please read the [contribution guidelines](https://github.com/IBM/nodejs-idb-pconnector/blob/master/CONTRIBUTING.md).
 
+
+# **Release**
+
+To generate a release use one of the npm scripts:
+
+- patch release `npm run release`
+- minor version release `npm run release-minor`
+- major version release `npm run release-major`
+
+These scripts will bump the version number, make a release commit, and tag the release.
+
+Once the tag is created, create a github release manually using the appropriate tag.
+
+After the release is published the [publish action](https://github.com/IBM/nodejs-idb-pconnector/blob/a4154bacf8e327e242c2d44e312079aea0690d8f/.github/workflows/publish.yml#L1) will publish to npm. 
 
