@@ -240,10 +240,10 @@ Please read the [contribution guidelines](https://github.com/IBM/nodejs-idb-pcon
 To generate a release use one of the npm scripts:
 
 - patch release `npm run release`
-- for other release types run `npm run release-interactive` which will prompt
+- for other release types run `npm run release-it` which will prompt
   you for the release type.
 
-These scripts will bump the version number, make a release commit, tag the release, and finally create a github release if the user has `GITHUB`_TOKEN set.
+These scripts will bump the version number, make a release commit, tag the release, and finally create a github release if the user has `GITHUB_TOKEN` set.
 
 Otherwise release-it will output a URL with all the fields pre-populated see the [release-it docs](https://github.com/release-it/release-it/blob/HEAD/docs/github-releases.md#manual).
 
