@@ -29,6 +29,7 @@ The `DBPool` class includes integrated aggregates (runSql and prepareExecute) to
 - [**Documentation**](#documentation)
 - [**License**](#license)
 - [**Contributing**](#contributing)
+- [**Release**](#release)
 
 
 # **Install**
@@ -233,4 +234,8 @@ Please read the [docs](https://github.com/IBM/nodejs-idb-pconnector/blob/master/
 # **Contributing**
 Please read the [contribution guidelines](https://github.com/IBM/nodejs-idb-pconnector/blob/master/CONTRIBUTING.md).
 
+
+# **Release**
+
+For information on making a release, read [RELEASE.md](docs/RELEASE.md).
 
