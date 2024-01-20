@@ -1,0 +1,23 @@
+{
+  "npm": {
+    "publish": false
+  },
+  "git": {
+    "commitMessage": "chore: release ${version}",
+    "push": false
+  },
+  "github":{
+    "release": false,
+    "releaseName": "${version}"
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+     "header": "# idb-pconnector change log",
+     "preset": {
+       "name": "angular"
+     },
+      "infile": "CHANGELOG.md",
+      "ignoreRecommendedBump": true
+    }
+  }
+}
