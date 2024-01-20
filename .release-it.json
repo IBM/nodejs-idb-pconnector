@@ -12,7 +12,10 @@
   },
   "plugins": {
     "@release-it/conventional-changelog": {
-      "preset": "conventionalcommits",
+     "header": "# idb-pconnector change log",
+     "preset": {
+       "name": "angular"
+     },
       "infile": "CHANGELOG.md",
       "ignoreRecommendedBump": true
     }
