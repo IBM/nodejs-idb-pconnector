@@ -1,5 +1,33 @@
 # idb-pconnector change log
 
+# 1.1.2
+
+- build(deps): bump json5 from 1.0.1 to 1.0.2 in #134
+- chore: fix copyright headers in #140
+- build(deps): bump semver from 6.3.0 to 6.3.1 in #136
+- build(deps-dev): bump word-wrap from 1.2.3 to 1.2.5 in #141
+- ci: update release process in #139
+- build: update release-it to 0.17.5 in #142
+- build(deps): bump tar from 6.1.13 to 6.2.1  in #143
+- build(deps-dev): bump braces from 3.0.2 to 3.0.3 in #144
+- build(deps): bump serialize-javascript and mocha in #145
+- build(deps): bump basic-ftp from 5.0.4 to 5.2.2 in #152
+- build(deps): bump lodash, @release-it/conventional-changelog and release-it in #151
+- build(deps-dev): bump handlebars from 4.7.8 to 4.7.9 in #150
+- build(deps): bump brace-expansion from 1.1.11 to 1.1.14 in #149
+- build(deps): bump minimatch from 3.1.2 to 3.1.5 in #155
+- build(deps-dev): bump flatted from 3.2.7 to 3.4.2 in #154
+- build(deps): bump picomatch from 2.3.1 to 2.3.2 in #153
+- build(deps-dev): bump js-yaml from 4.1.0 to 4.3.0 in #160
+- build(deps): bump ip-address from 10.1.0 to 10.2.0 in #156
+- build(deps-dev): bump js-yaml from 4.3.0 to 4.3.2 in #164
+- build(deps): bump brace-expansion from 1.1.14 to 1.1.18 in #165
+- build(deps): bump ip-address from 10.2.0 to 10.7.0 in #166
+- build(deps): bump undici, @release-it/conventional-changelog and release-it in #161
+- build(deps): bump serialize-javascript and mocha in #167
+- ci: Use trusted publisher in #168
+- doc: Replace Ryver link in #169
+
 # 1.1.1
 
 - build: Update deps to latest version ([#129](https://github.com/IBM/nodejs-idb-pconnector/pull/129))
