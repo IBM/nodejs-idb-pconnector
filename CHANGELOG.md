@@ -1,5 +1,9 @@
 # idb-pconnector change log
 
+# 1.2.0
+
+- build: Support Node.js >= 20
+
 # 1.1.2
 
 - build(deps): bump json5 from 1.0.1 to 1.0.2 in #134
