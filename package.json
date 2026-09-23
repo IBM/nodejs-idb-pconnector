@@ -1,9 +1,11 @@
 {
   "name": "idb-pconnector",
-  "version": "1.1.1",
+  "version": "1.1.2-rc.0",
   "description": "Promise based DB2 Connector for IBM i",
   "main": "lib/idb-pconnector.js",
-  "files": ["lib/"],
+  "files": [
+    "lib/"
+  ],
   "scripts": {
     "test": "node node_modules/.bin/mocha",
     "lint": "./node_modules/eslint/bin/eslint.js lib/ test/",
@@ -24,7 +26,7 @@
   "homepage": "https://github.com/IBM/nodejs-idb-pconnector#readme",
   "dependencies": {
     "depd": "^2.0.0",
-    "idb-connector": "^1.2.17"
+    "idb-connector": "^1.3.0"
   },
   "devDependencies": {
     "@release-it/conventional-changelog": "^12.0.2",
